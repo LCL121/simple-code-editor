@@ -108,8 +108,6 @@ module.exports = {
       'undefined'
     ],
     'id-match': 'error',
-    'import/no-deprecated': 'warn',
-    'import/order': 'error',
     'new-parens': 'error',
     'no-bitwise': 'off',
     'no-caller': 'error',
