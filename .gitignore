@@ -1,0 +1,11 @@
+# dir
+/node_modules
+/lib
+/dist
+
+# lock file
+yarn.lock
+package-lock.json
+
+# error file
+yarn-error.log
