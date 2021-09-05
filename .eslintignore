@@ -1,0 +1,10 @@
+dist/
+node_modules/
+doc/
+.vscode/
+**/es/**/*
+**/lib/**/*
+demo/
+
+**/*.less
+**/*.md
