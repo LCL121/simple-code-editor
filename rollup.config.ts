@@ -3,6 +3,8 @@ import babel from "@rollup/plugin-babel";
 import json from "@rollup/plugin-json";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
+import less from 'rollup-plugin-less';
+import del from 'rollup-plugin-delete';
 
 export default [
   {
@@ -14,10 +16,14 @@ export default [
       format: "umd",
     },
     plugins: [
+      del({ targets: 'dist/*' }),
       json(),
       resolve(),
       commonjs(),
       typescript(),
+      less({
+        output: './dist/simpleCodeEditor.css'
+      }),
       babel({ babelHelpers: "bundled", exclude: "node_modules/**" }),
     ],
   },

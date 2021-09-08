@@ -20,4 +20,8 @@ export class Doc implements VNode {
     }
     return result;
   }
+
+  updateDoc() {
+    console.log('update doc');
+  }
 }

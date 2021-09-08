@@ -5,12 +5,13 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Code Editor</title>
+  <link rel="stylesheet" href="../dist/simpleCodeEditor.css">
   <script src="../dist/simpleCodeEditor.js"></script>
 </head>
 <body>
   <div id="root"></div>
   <script>
-    new SimpleCodeEditor({ value: 'const a = 1;\nlet b = 2;'}).render(document.getElementById('root'));
+    new SimpleCodeEditor({ value: 'const a = 1;\nlet b = 2;\n'}).render(document.getElementById('root'));
   </script>
 </body>
 </html>

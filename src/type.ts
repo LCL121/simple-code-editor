@@ -18,3 +18,14 @@ export interface VNodeAttr {
 }
 
 export type VNodeAttrs = VNodeAttr[] | undefined;
+
+export const InputType = [
+  'insertText',
+  'insertFromPaste',
+  'insertCompositionText',
+  'insertFromDrop',
+  'deleteContentBackward',
+  'deleteByCut',
+  'deleteByDrag',
+  'insertLineBreak'
+];

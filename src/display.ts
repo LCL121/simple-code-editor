@@ -1,11 +1,20 @@
 import { Doc } from './doc';
+import { Input } from './input';
 import { VNode, VNodeAttrs } from './type';
 
+interface DisplayRenderOptions {
+  container: HTMLElement;
+  doc: Doc;
+  input?: Input;
+}
+
 export class Display {
-  static render(doc: Doc, container: HTMLElement) {
+  static render(options: DisplayRenderOptions) {
+    const { doc, container, input } = options;
     if (doc.init) {
       const children = createVNodeElement(doc);
       container.appendChild(children);
+      input?.init(container, doc);
       doc.init = false;
     } else {
     }
@@ -13,7 +22,7 @@ export class Display {
 }
 
 function createVNodeElement(node: VNode): HTMLElement {
-  const ele = createElement(node.tag);
+  const ele = createElement(node.tag, node.attrs);
   const children = node.children;
   if (typeof children === 'string') {
     ele.appendChild(createTextElement(children));
@@ -22,6 +31,7 @@ function createVNodeElement(node: VNode): HTMLElement {
       ele.appendChild(createVNodeElement(child));
     }
   }
+  node.ele = ele;
   return ele;
 }
 
