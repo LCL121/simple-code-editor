@@ -1,22 +1,20 @@
-import typescript from "@rollup/plugin-typescript";
-import babel from "@rollup/plugin-babel";
-import json from "@rollup/plugin-json";
-import resolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
+import typescript from '@rollup/plugin-typescript';
+import babel from '@rollup/plugin-babel';
+import json from '@rollup/plugin-json';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 import less from 'rollup-plugin-less';
-import del from 'rollup-plugin-delete';
 
 export default [
   {
-    input: "./src/simpleCodeEditor.ts",
+    input: './src/simpleCodeEditor.ts',
     output: {
-      name: "SimpleCodeEditor",
+      name: 'SimpleCodeEditor',
       sourcemap: true,
-      file: "./dist/simpleCodeEditor.js",
-      format: "umd",
+      file: './dist/simpleCodeEditor.js',
+      format: 'umd'
     },
     plugins: [
-      del({ targets: 'dist/*' }),
       json(),
       resolve(),
       commonjs(),
@@ -24,7 +22,7 @@ export default [
       less({
         output: './dist/simpleCodeEditor.css'
       }),
-      babel({ babelHelpers: "bundled", exclude: "node_modules/**" }),
-    ],
-  },
+      babel({ babelHelpers: 'bundled', exclude: 'node_modules/**' })
+    ]
+  }
 ];

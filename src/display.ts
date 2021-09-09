@@ -2,22 +2,37 @@ import { Doc } from './doc';
 import { Input } from './input';
 import { VNode, VNodeAttrs } from './type';
 
-interface DisplayRenderOptions {
+interface DisplayInitOptions {
   container: HTMLElement;
   doc: Doc;
-  input?: Input;
+  input: Input;
 }
 
 export class Display {
-  static render(options: DisplayRenderOptions) {
+  static init(options: DisplayInitOptions) {
     const { doc, container, input } = options;
     if (doc.init) {
       const children = createVNodeElement(doc);
-      container.appendChild(children);
-      input?.init(container, doc);
+      container.append(input.ele, children);
       doc.init = false;
+
+      Display.addEventListener(doc, input);
     } else {
+      console.warn('doc initialized');
     }
+  }
+
+  private static addEventListener(doc: Doc, input: Input) {
+    doc.ele?.addEventListener('click', () => {
+      input.focus();
+    });
+    input.ele.addEventListener('input', (e) => {
+      console.log(e);
+      doc.updateDoc();
+    });
+    input.ele.addEventListener('copy', (e) => {
+      console.log(e);
+    });
   }
 }
 

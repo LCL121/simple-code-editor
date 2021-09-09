@@ -15,6 +15,7 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier'],
   extends: ['plugin:prettier/recommended'],
   rules: {
+    'linebreak-style': ['error', 'unix'],
     '@typescript-eslint/array-type': 'off',
     '@typescript-eslint/ban-types': [
       'error',

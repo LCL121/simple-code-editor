@@ -17,11 +17,13 @@ class SimpleCodeEditor {
   }
 
   render(container: HTMLElement) {
-    Display.render({
-      doc: this.doc,
-      input: this.input,
-      container
-    });
+    if (this.doc.init) {
+      Display.init({
+        doc: this.doc,
+        input: this.input,
+        container
+      });
+    }
   }
 }
 
