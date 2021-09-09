@@ -8,8 +8,8 @@ interface SimpleCodeEditorOptions {
 }
 
 class SimpleCodeEditor {
-  doc: Doc;
-  input: Input;
+  private doc: Doc;
+  private input: Input;
   constructor(options: SimpleCodeEditorOptions) {
     const { value } = options;
     this.doc = new Doc(value);
@@ -24,6 +24,10 @@ class SimpleCodeEditor {
         container
       });
     }
+  }
+
+  getCode() {
+    return this.doc.getCode();
   }
 }
 

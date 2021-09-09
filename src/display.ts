@@ -1,6 +1,8 @@
 import { Doc } from './doc';
 import { Input } from './input';
-import { VNode, VNodeAttrs } from './type';
+import { VNode } from './type';
+import { posFromMouse } from './pos';
+import { createElement, createTextElement } from './utils';
 
 interface DisplayInitOptions {
   container: HTMLElement;
@@ -23,6 +25,9 @@ export class Display {
   }
 
   private static addEventListener(doc: Doc, input: Input) {
+    doc.ele?.addEventListener('mousedown', (e) => {
+      posFromMouse(doc, e);
+    });
     doc.ele?.addEventListener('click', () => {
       input.focus();
     });
@@ -48,18 +53,4 @@ function createVNodeElement(node: VNode): HTMLElement {
   }
   node.ele = ele;
   return ele;
-}
-
-function createElement(tag: string, attrs?: VNodeAttrs) {
-  const ele = document.createElement(tag);
-  if (attrs !== undefined) {
-    for (const attr of attrs) {
-      ele.setAttribute(attr.name, attr.value);
-    }
-  }
-  return ele;
-}
-
-function createTextElement(text: string) {
-  return document.createTextNode(text);
 }

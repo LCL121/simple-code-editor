@@ -1,3 +1,5 @@
+import { inputTypes, changeOrigin } from './constants';
+
 export interface VNode {
   tag: string;
   parent: ParentVNode;
@@ -19,13 +21,8 @@ export interface VNodeAttr {
 
 export type VNodeAttrs = VNodeAttr[] | undefined;
 
-export const InputType = [
-  'insertText',
-  'insertFromPaste',
-  'insertCompositionText',
-  'insertFromDrop',
-  'deleteContentBackward',
-  'deleteByCut',
-  'deleteByDrag',
-  'insertLineBreak'
-];
+export type InputTypes = typeof inputTypes[number];
+
+export type PosSticky = 'before' | 'after' | null;
+
+export type ChangeOrigin = typeof changeOrigin[number];

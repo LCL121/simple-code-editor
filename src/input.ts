@@ -1,5 +1,3 @@
-import { Doc } from './doc';
-
 export class Input {
   ele: HTMLTextAreaElement;
   constructor() {
