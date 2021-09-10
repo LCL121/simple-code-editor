@@ -2,7 +2,7 @@ import { Doc } from './doc';
 import { Input } from './input';
 import { VNode } from './type';
 import { posFromMouse } from './pos';
-import { createElement, createTextElement } from './utils';
+import { createElement, createTextElement, isString } from './utils';
 
 interface DisplayInitOptions {
   container: HTMLElement;
@@ -44,7 +44,7 @@ export class Display {
 function createVNodeElement(node: VNode): HTMLElement {
   const ele = createElement(node.tag, node.attrs);
   const children = node.children;
-  if (typeof children === 'string') {
+  if (isString(children)) {
     ele.appendChild(createTextElement(children));
   } else if (children !== undefined) {
     for (const child of children) {

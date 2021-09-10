@@ -20,3 +20,11 @@ export function createElement(tag: string, attrs?: VNodeAttrs) {
 export function createTextElement(text: string) {
   return document.createTextNode(text);
 }
+
+export function isString(s: any): s is string {
+  return typeof s === 'string';
+}
+
+export function isUndefined(u: any): u is undefined {
+  return u === undefined;
+}

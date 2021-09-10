@@ -4,7 +4,7 @@ import { VNode, ParentVNode, VNodeEle, VNodeAttrs } from './type';
 export class Doc implements VNode {
   parent: ParentVNode;
   children: Line[];
-  ele: VNodeEle;
+  ele: HTMLElement | undefined;
   init: boolean;
   tag = 'div';
   attrs: VNodeAttrs;
