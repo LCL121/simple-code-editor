@@ -1,5 +1,6 @@
 import { Line } from './line';
-import { VNode, ParentVNode, VNodeEle, VNodeAttrs } from './type';
+import { VNode, ParentVNode, VNodeEle, VNodeAttrs, PosMap } from '../shared/type';
+import { lineHeight } from '../shared/constants';
 
 export class Doc implements VNode {
   parent: ParentVNode;
@@ -8,6 +9,8 @@ export class Doc implements VNode {
   init: boolean;
   tag = 'div';
   attrs: VNodeAttrs;
+  lineHeight = lineHeight;
+  posMap: PosMap = {};
   constructor(text: string) {
     this.children = this.createLines(text.split(/\r\n?|\n/));
     this.init = true;
@@ -35,14 +38,7 @@ export class Doc implements VNode {
   }
 
   getLineNAtHeight(h: number) {
-    let current = 0;
-    let i = 0;
-    const lines = this.children.length;
-    while (current < h && i < lines) {
-      current += this.children[i].height;
-      i++;
-    }
-    return i - 1;
+    return (h / this.lineHeight) | 0;
   }
 
   getLine(n: number) {

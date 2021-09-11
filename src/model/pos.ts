@@ -1,6 +1,6 @@
-import { PosSticky, PosMap, PosMapCh, PosMapLine } from './type';
+import { PosSticky, PosMap, PosMapCh, PosMapLine } from '../shared/type';
 import { Doc } from './doc';
-import { range, createTextElement, isString, isUndefined } from './utils';
+import { range, createTextElement, isString, isUndefined } from '../shared/utils';
 
 export class Pos {
   line: number;
@@ -34,8 +34,6 @@ export class Pos {
   }
 }
 
-const posMap: PosMap = {};
-
 export function posFromMouse(doc: Doc, e: MouseEvent) {
   const docRect = doc.getDocRect();
   const x = e.clientX - (docRect?.x || 0);
@@ -47,8 +45,8 @@ export function posFromMouse(doc: Doc, e: MouseEvent) {
 }
 
 function getLineTextMap(lineN: number, doc: Doc) {
-  if (posMap[lineN]) {
-    return posMap[lineN];
+  if (doc.posMap[lineN]) {
+    return doc.posMap[lineN];
   }
   const lineObj = doc.getLine(lineN);
   const children = lineObj.children;
@@ -77,7 +75,7 @@ function getLineTextMap(lineN: number, doc: Doc) {
       idx = endIdx;
     }
   }
-  posMap[lineN] = posMapLine;
+  doc.posMap[lineN] = posMapLine;
   return posMapLine;
 }
 

@@ -1,6 +1,6 @@
-import { Doc } from './doc';
-import { Display } from './display';
-import { Input } from './input';
+import { Doc } from './model/doc';
+import { Display } from './display/display';
+import { Input } from './display/input';
 import './styles/index.less';
 
 interface SimpleCodeEditorOptions {

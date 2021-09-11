@@ -1,5 +1,5 @@
 import { Pos } from './pos';
-import { ChangeOrigin } from './type';
+import { ChangeOrigin } from '../shared/type';
 
 interface ChangeOptions {
   from: Pos;

@@ -1,4 +1,4 @@
-import { VNode, ChildeVNode, ParentVNode, VNodeEle, VNodeAttrs } from './type';
+import { VNode, ChildeVNode, ParentVNode, VNodeEle, VNodeAttrs } from '../shared/type';
 
 export class Span implements VNode {
   children: ChildeVNode;

@@ -1,8 +1,8 @@
-import { Doc } from './doc';
+import { Doc } from '../model/doc';
 import { Input } from './input';
-import { VNode } from './type';
-import { posFromMouse } from './pos';
-import { createElement, createTextElement, isString } from './utils';
+import { VNode } from '../shared/type';
+import { posFromMouse } from '../model/pos';
+import { createElement, createTextElement, isString } from '../shared/utils';
 
 interface DisplayInitOptions {
   container: HTMLElement;
