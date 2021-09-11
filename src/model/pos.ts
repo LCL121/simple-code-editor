@@ -24,6 +24,10 @@ export class Pos {
     this.position = position;
   }
 
+  copy() {
+    return Pos.copyPos(this);
+  }
+
   static cmp(a: Pos, b: Pos) {
     return a.line - b.line && a.ch - b.ch;
   }
@@ -35,7 +39,8 @@ export class Pos {
   static copyPos(x: Pos) {
     return new Pos({
       line: x.line,
-      ch: x.ch
+      ch: x.ch,
+      sticky: x.sticky
     });
   }
 
@@ -68,7 +73,7 @@ export function posFromMouse(doc: Doc, e: MouseEvent) {
 
 function getLineTextMap(lineN: number, doc: Doc) {
   if (doc.posMap[lineN]) {
-    return doc.posMap[lineN];
+    return doc.posMap[lineN] as PosMapLine;
   }
   const lineObj = doc.getLine(lineN);
   const children = lineObj.children;
@@ -181,4 +186,8 @@ function surmisePosChInfo(lineText: PosMapLine, x: number, docX: number, overLin
     sticky,
     chX: chX > 0 ? chX - docX : 0
   };
+}
+
+export function surmiseInfoFromPos(pos: Pos) {
+  console.log(pos);
 }

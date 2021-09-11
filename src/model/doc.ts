@@ -1,5 +1,6 @@
 import { Line } from './line';
-import { Pos } from './pos';
+import { Pos, surmiseInfoFromPos } from './pos';
+import { Change } from './change';
 import { VNode, ParentVNode, VNodeEle, VNodeAttrs, PosMap } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
 
@@ -61,8 +62,12 @@ export class Doc implements VNode {
     return this.children[n];
   }
 
-  updateDoc() {
-    console.log('update doc');
+  updateDoc(change: Change) {
+    const { from, to } = change;
+    for (let i = from.line; i <= to.line; i++) {
+      this.posMap[i] = undefined;
+    }
+    surmiseInfoFromPos(this.pos?.copy()!);
   }
 
   updatePos(pos: Pos) {

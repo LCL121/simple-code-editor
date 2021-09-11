@@ -1,11 +1,11 @@
 import { Pos } from './pos';
-import { ChangeOrigin } from '../shared/type';
+import { ChangeOrigin } from '../shared/constants';
 
 interface ChangeOptions {
   from: Pos;
   to: Pos;
   origin: ChangeOrigin;
-  removed: string[];
+  removed?: string[];
   text: string[];
 }
 
@@ -13,7 +13,7 @@ export class Change {
   from: Pos;
   to: Pos;
   origin: ChangeOrigin;
-  removed: string[];
+  removed?: string[];
   text: string[];
 
   constructor(options: ChangeOptions) {
