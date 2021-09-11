@@ -166,10 +166,13 @@ function surmisePosChInfo(lineText: PosMapLine, x: number, docX: number, overLin
     } else if (rightRect.left - docX < x && rightRect.right - docX > x) {
       return searchCh(mid, end);
     } else if (rightRect.right - docX < x) {
+      // 点击到尾部空白处
       chX = rightRect.right;
-      return end;
+      return end - 1;
     } else {
+      // 点击到头部空白处
       chX = leftRect.left;
+      sticky = 'before';
       return start;
     }
   }
