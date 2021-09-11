@@ -1,35 +1,42 @@
 import { Doc } from '../model/doc';
 import { Input } from './input';
+import { Cursor } from './cursor';
 import { VNode } from '../shared/type';
 import { posFromMouse } from '../model/pos';
-import { createElement, createTextElement, isString } from '../shared/utils';
+import { createElement, createTextElement, isString, e_preventDefault, activeElt } from '../shared/utils';
 
 interface DisplayInitOptions {
   container: HTMLElement;
   doc: Doc;
   input: Input;
+  cursor: Cursor;
 }
 
 export class Display {
   static init(options: DisplayInitOptions) {
-    const { doc, container, input } = options;
+    const { doc, container, input, cursor } = options;
     if (doc.init) {
-      const children = createVNodeElement(doc);
-      container.append(input.ele, children);
+      const docEle = createVNodeElement(doc);
+      container.append(input.ele, docEle);
+      docEle.appendChild(cursor.ele);
       doc.init = false;
 
-      Display.addEventListener(doc, input);
+      Display.addEventListener(doc, input, cursor);
     } else {
       console.warn('doc initialized');
     }
   }
 
-  private static addEventListener(doc: Doc, input: Input) {
+  private static addEventListener(doc: Doc, input: Input, cursor: Cursor) {
     doc.ele?.addEventListener('mousedown', (e) => {
-      posFromMouse(doc, e);
-    });
-    doc.ele?.addEventListener('click', () => {
-      input.focus();
+      e_preventDefault(e);
+      const pos = posFromMouse(doc, e);
+      doc.updatePos(pos);
+      if (activeElt() === document.body) {
+        input.focus();
+        cursor.show();
+      }
+      cursor.updatePosition(pos.position.x, pos.position.y);
     });
     input.ele.addEventListener('input', (e) => {
       console.log(e);

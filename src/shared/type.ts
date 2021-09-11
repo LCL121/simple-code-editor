@@ -51,3 +51,8 @@ export interface PosMapLine {
 export interface PosMap {
   [lineN: number]: PosMapLine;
 }
+
+export interface Point {
+  x: number;
+  y: number;
+}

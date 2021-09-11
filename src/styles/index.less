@@ -6,6 +6,10 @@ html, body, p, div, span {
 }
 
 .simple_code_editor {
+  &_doc {
+    position: relative;
+    cursor: text;
+  }
   &_line {
     font-size: 13px;
     line-height: @line-height;
@@ -13,5 +17,26 @@ html, body, p, div, span {
   }
   &_a {
     font: optional;
+  }
+  &_cursor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: @line-height;
+    background-color: #000;
+    animation: blink 1s infinite;
+  }
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }

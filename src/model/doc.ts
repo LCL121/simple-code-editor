@@ -1,6 +1,7 @@
 import { Line } from './line';
+import { Pos } from './pos';
 import { VNode, ParentVNode, VNodeEle, VNodeAttrs, PosMap } from '../shared/type';
-import { lineHeight } from '../shared/constants';
+import { lineHeight, classPrefix } from '../shared/constants';
 
 export class Doc implements VNode {
   parent: ParentVNode;
@@ -8,9 +9,10 @@ export class Doc implements VNode {
   ele: HTMLElement | undefined;
   init: boolean;
   tag = 'div';
-  attrs: VNodeAttrs;
+  attrs: VNodeAttrs = [{ name: 'class', value: `${classPrefix}_doc` }];
   lineHeight = lineHeight;
   posMap: PosMap = {};
+  pos?: Pos;
   constructor(text: string) {
     this.children = this.createLines(text.split(/\r\n?|\n/));
     this.init = true;
@@ -47,5 +49,9 @@ export class Doc implements VNode {
 
   updateDoc() {
     console.log('update doc');
+  }
+
+  updatePos(pos: Pos) {
+    this.pos = pos;
   }
 }

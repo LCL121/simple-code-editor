@@ -1,16 +1,26 @@
-import { PosSticky, PosMap, PosMapCh, PosMapLine } from '../shared/type';
+import { PosSticky, Point, PosMapCh, PosMapLine } from '../shared/type';
 import { Doc } from './doc';
-import { range, createTextElement, isString, isUndefined } from '../shared/utils';
+import { range, isString, isUndefined } from '../shared/utils';
+
+interface PosOptions {
+  line: number;
+  ch: number;
+  sticky?: PosSticky;
+  position?: Point;
+}
 
 export class Pos {
   line: number;
   ch: number;
+  position: Point;
   sticky: PosSticky;
 
-  constructor(line: number, ch: number, sticky: PosSticky = null) {
+  constructor(options: PosOptions) {
+    const { line, ch, sticky = null, position = { x: 0, y: 0 } } = options;
     this.line = line;
     this.ch = ch;
     this.sticky = sticky;
+    this.position = position;
   }
 
   static cmp(a: Pos, b: Pos) {
@@ -22,7 +32,10 @@ export class Pos {
   }
 
   static copyPos(x: Pos) {
-    return new Pos(x.line, x.ch);
+    return new Pos({
+      line: x.line,
+      ch: x.ch
+    });
   }
 
   static maxPos(...poses: Pos[]) {
@@ -40,8 +53,16 @@ export function posFromMouse(doc: Doc, e: MouseEvent) {
   const y = e.clientY - (docRect?.y || 0);
   const lineN = doc.getLineNAtHeight(y);
   const lineText = getLineTextMap(lineN, doc);
-  const pos = surmisePos(lineText, x, lineN);
-  console.log(pos);
+  const posChInfo = surmisePosChInfo(lineText, x);
+  return new Pos({
+    line: lineN,
+    ch: posChInfo.ch,
+    sticky: posChInfo.sticky,
+    position: {
+      x: posChInfo.chX,
+      y: lineN * doc.lineHeight
+    }
+  });
 }
 
 function getLineTextMap(lineN: number, doc: Doc) {
@@ -79,7 +100,7 @@ function getLineTextMap(lineN: number, doc: Doc) {
   return posMapLine;
 }
 
-function surmisePos(lineText: PosMapLine, x: number, lineN: number) {
+function surmisePosChInfo(lineText: PosMapLine, x: number) {
   const keys = Object.keys(lineText).map((key) => Number(key));
   function searchSpan(start: number, end: number): PosMapCh {
     if (start === end) {
@@ -98,15 +119,18 @@ function surmisePos(lineText: PosMapLine, x: number, lineN: number) {
   }
   const span = keys.length === 1 ? lineText[0] : searchSpan(0, keys.length);
   let sticky: PosSticky = 'after';
+  let chX = 0;
   if (isUndefined(span.rect)) {
     return {
       ch: span.endCh,
-      sticky
+      sticky,
+      chX: 0
     };
   }
   const textNode = span.text;
   const textLen = span.endCh - span.startCh;
   function searchCh(start: number, end: number): number {
+    // first judge
     if (start === end) {
       return start;
     }
@@ -116,6 +140,9 @@ function surmisePos(lineText: PosMapLine, x: number, lineN: number) {
       const divider = ((chRect.right - chRect.left) * 3) / 4 + chRect.left;
       if (divider > x) {
         sticky = 'before';
+        chX = chRect.left;
+      } else {
+        chX = chRect.right;
       }
       return mid;
     }
@@ -126,10 +153,16 @@ function surmisePos(lineText: PosMapLine, x: number, lineN: number) {
     } else if (rightRect.left < x && rightRect.right > x) {
       return searchCh(mid, end);
     } else if (rightRect.right < x) {
+      chX = rightRect.right;
       return end;
     } else {
+      chX = leftRect.left;
       return start;
     }
   }
-  return new Pos(lineN, searchCh(0, textLen), sticky as PosSticky);
+  return {
+    ch: searchCh(0, textLen),
+    sticky: sticky as PosSticky,
+    chX
+  };
 }
