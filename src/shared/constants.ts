@@ -14,3 +14,7 @@ export const inputTypes = [
 ] as const;
 
 export const changeOrigin = ['cut', 'undo', 'paste', 'input', 'delete', 'drag', 'compose'] as const;
+
+export const docLeftGap = 5 + 30 + 5;
+
+export const docTopGap = 5;

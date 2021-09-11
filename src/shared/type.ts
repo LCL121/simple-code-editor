@@ -46,6 +46,7 @@ export interface PosMapCh {
 
 export interface PosMapLine {
   [startCh: number]: PosMapCh;
+  length?: number;
 }
 
 export interface PosMap {

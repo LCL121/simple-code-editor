@@ -1,4 +1,6 @@
 @line-height: 15px;
+@gutters-width: 30px;
+@gutters-margin-right: 5px;
 
 html, body, p, div, span {
   margin: 0;
@@ -6,9 +8,42 @@ html, body, p, div, span {
 }
 
 .simple_code_editor {
+  position: relative;
+  display: flex;
+  margin: 5px;
+  font-family: monospace;
+
+  &_textarea {
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
+
+  &_gutters {
+    width: @gutters-width;
+    margin-right: @gutters-margin-right;
+    padding-bottom: 75px;
+    border-right: 1px solid #ddd;
+    background-color: #f7f7f7;
+    box-sizing: border-box;
+    cursor: default;
+
+    &_item {
+      text-align: right;
+      padding: 0 5px;
+      width: @gutters-width - 10px;
+      color: #999;
+      white-space: nowrap;
+      height: 15px;
+      line-height: 15px;
+      font-size: 13px;
+    }
+  }
+
   &_doc {
     position: relative;
     cursor: text;
+    flex: 1;
   }
   &_line {
     font-size: 13px;

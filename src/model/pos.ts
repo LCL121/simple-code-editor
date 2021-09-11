@@ -1,6 +1,7 @@
 import { PosSticky, Point, PosMapCh, PosMapLine } from '../shared/type';
 import { Doc } from './doc';
 import { range, isString, isUndefined } from '../shared/utils';
+import { docLeftGap } from '../shared/constants';
 
 interface PosOptions {
   line: number;
@@ -51,9 +52,9 @@ export function posFromMouse(doc: Doc, e: MouseEvent) {
   const docRect = doc.getDocRect();
   const x = e.clientX - (docRect?.x || 0);
   const y = e.clientY - (docRect?.y || 0);
-  const lineN = doc.getLineNAtHeight(y);
+  const { lineN, overLines } = doc.getLineNByHeight(y);
   const lineText = getLineTextMap(lineN, doc);
-  const posChInfo = surmisePosChInfo(lineText, x);
+  const posChInfo = surmisePosChInfo(lineText, x, docRect?.x || 0, overLines);
   return new Pos({
     line: lineN,
     ch: posChInfo.ch,
@@ -72,7 +73,9 @@ function getLineTextMap(lineN: number, doc: Doc) {
   const lineObj = doc.getLine(lineN);
   const children = lineObj.children;
   const posMapLine: PosMapLine = {};
+  let length = 0;
   if (isString(children)) {
+    length = 1;
     const text = lineObj.ele?.firstChild as Text;
     const len = lineObj.text.length;
     posMapLine[0] = {
@@ -82,6 +85,7 @@ function getLineTextMap(lineN: number, doc: Doc) {
       rect: len === 0 ? undefined : range(text, 0, len).getClientRects()[0]
     };
   } else if (!isUndefined(children)) {
+    length = children.length;
     let idx = 0;
     for (const child of children) {
       const len = child.text.length;
@@ -96,11 +100,12 @@ function getLineTextMap(lineN: number, doc: Doc) {
       idx = endIdx;
     }
   }
+  posMapLine.length = length;
   doc.posMap[lineN] = posMapLine;
   return posMapLine;
 }
 
-function surmisePosChInfo(lineText: PosMapLine, x: number) {
+function surmisePosChInfo(lineText: PosMapLine, x: number, docX: number, overLines?: boolean) {
   const keys = Object.keys(lineText).map((key) => Number(key));
   function searchSpan(start: number, end: number): PosMapCh {
     if (start === end) {
@@ -110,21 +115,29 @@ function surmisePosChInfo(lineText: PosMapLine, x: number) {
     const midSpan = lineText[keys[mid]];
     if (mid === start) {
       return midSpan;
-    } else if (midSpan.rect!.left > x) {
+    } else if (midSpan.rect!.left - docX > x) {
       return searchSpan(start, mid);
-    } else if (midSpan.rect!.right < x) {
+    } else if (midSpan.rect!.right - docX < x) {
       return searchSpan(mid, end);
     }
     return midSpan;
   }
-  const span = keys.length === 1 ? lineText[0] : searchSpan(0, keys.length);
+  const span =
+    lineText.length === 1 ? lineText[0] : overLines ? lineText[lineText.length! - 1] : searchSpan(0, keys.length);
   let sticky: PosSticky = 'after';
   let chX = 0;
   if (isUndefined(span.rect)) {
     return {
       ch: span.endCh,
       sticky,
-      chX: 0
+      chX
+    };
+  }
+  if (overLines) {
+    return {
+      ch: span.text.length,
+      sticky,
+      chX: span.rect.right - docX
     };
   }
   const textNode = span.text;
@@ -138,7 +151,7 @@ function surmisePosChInfo(lineText: PosMapLine, x: number) {
     if (mid === start) {
       const chRect = range(textNode, start, end).getClientRects()[0];
       const divider = ((chRect.right - chRect.left) * 3) / 4 + chRect.left;
-      if (divider > x) {
+      if (divider - docX > x) {
         sticky = 'before';
         chX = chRect.left;
       } else {
@@ -148,11 +161,11 @@ function surmisePosChInfo(lineText: PosMapLine, x: number) {
     }
     const leftRect = range(textNode, start, mid).getClientRects()[0];
     const rightRect = range(textNode, mid, end).getClientRects()[0];
-    if (leftRect.left < x && leftRect.right > x) {
+    if (leftRect.left - docX < x && leftRect.right - docX > x) {
       return searchCh(start, mid);
-    } else if (rightRect.left < x && rightRect.right > x) {
+    } else if (rightRect.left - docX < x && rightRect.right - docX > x) {
       return searchCh(mid, end);
-    } else if (rightRect.right < x) {
+    } else if (rightRect.right - docX < x) {
       chX = rightRect.right;
       return end;
     } else {
@@ -162,7 +175,7 @@ function surmisePosChInfo(lineText: PosMapLine, x: number) {
   }
   return {
     ch: searchCh(0, textLen),
-    sticky: sticky as PosSticky,
-    chX
+    sticky,
+    chX: chX > 0 ? chX - docX : 0
   };
 }

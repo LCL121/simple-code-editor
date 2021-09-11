@@ -1,7 +1,11 @@
+import { classPrefix } from '../shared/constants';
+
 export class Input {
   ele: HTMLTextAreaElement;
   constructor() {
-    this.ele = document.createElement('textarea');
+    const textarea = document.createElement('textarea');
+    textarea.setAttribute('class', `${classPrefix}_textarea`);
+    this.ele = textarea;
   }
 
   focus() {

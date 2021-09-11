@@ -39,8 +39,22 @@ export class Doc implements VNode {
     return this.ele?.getBoundingClientRect();
   }
 
-  getLineNAtHeight(h: number) {
-    return (h / this.lineHeight) | 0;
+  getLinesNum() {
+    return this.children.length;
+  }
+
+  getMaxLineN() {
+    return this.getLinesNum() - 1;
+  }
+
+  getLineNByHeight(h: number) {
+    const lineN = (h / this.lineHeight) | 0;
+    const maxLineN = this.getMaxLineN();
+    const overLines = lineN > maxLineN;
+    return {
+      lineN: overLines ? maxLineN : lineN,
+      overLines
+    };
   }
 
   getLine(n: number) {

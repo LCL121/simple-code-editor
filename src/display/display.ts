@@ -1,3 +1,4 @@
+import SimpleCodeEditor from '../simpleCodeEditor';
 import { Doc } from '../model/doc';
 import { Input } from './input';
 import { Cursor } from './cursor';
@@ -5,20 +6,14 @@ import { VNode } from '../shared/type';
 import { posFromMouse } from '../model/pos';
 import { createElement, createTextElement, isString, e_preventDefault, activeElt } from '../shared/utils';
 
-interface DisplayInitOptions {
-  container: HTMLElement;
-  doc: Doc;
-  input: Input;
-  cursor: Cursor;
-}
-
 export class Display {
-  static init(options: DisplayInitOptions) {
-    const { doc, container, input, cursor } = options;
+  static init(editor: SimpleCodeEditor, container: HTMLElement) {
+    const { doc, input, gutters, cursor, wrapper } = editor;
     if (doc.init) {
       const docEle = createVNodeElement(doc);
-      container.append(input.ele, docEle);
+      wrapper.ele.append(input.ele, gutters.ele, docEle);
       docEle.appendChild(cursor.ele);
+      container.appendChild(wrapper.ele);
       doc.init = false;
 
       Display.addEventListener(doc, input, cursor);
@@ -37,6 +32,12 @@ export class Display {
         cursor.show();
       }
       cursor.updatePosition(pos.position.x, pos.position.y);
+    });
+    input.ele.addEventListener('blur', () => {
+      cursor.hidden();
+    });
+    input.ele.addEventListener('focus', () => {
+      cursor.show();
     });
     input.ele.addEventListener('input', (e) => {
       console.log(e);
