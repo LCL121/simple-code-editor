@@ -4,7 +4,7 @@ import { Change } from '../model/change';
 import { Input } from './input';
 import { Cursor } from './cursor';
 import { VNode } from '../shared/type';
-import { posFromMouse } from '../model/pos';
+import { posFromMouse, surmiseInfoFromPos } from '../model/pos';
 import { createElement, createTextElement, isString, e_preventDefault, activeElt, makeArray } from '../shared/utils';
 import { KeyboardMapKeys, keyboardMapKeys, keyboardMap, inputTypes, InputTypes } from '../shared/constants';
 
@@ -62,8 +62,26 @@ export class Display {
       if (keyboardMapKeys.includes(e.key)) {
         e_preventDefault(e);
         const key = e.key as KeyboardMapKeys;
-        if (key === 'Tab') {
-          // doc.updateDoc()
+        const pos = doc.pos;
+        if (pos) {
+          switch (key) {
+            case 'Tab':
+              // doc.updateDoc();
+              break;
+            case 'ArrowUp':
+              const replaceLineUp = pos.line === 0 ? 0 : pos.line - 1;
+              const newPosUp = surmiseInfoFromPos(pos.replace({ line: replaceLineUp }), doc);
+              doc.updatePos(newPosUp);
+              cursor.updatePosition(newPosUp.position.x, newPosUp.position.y);
+              break;
+            case 'ArrowDown':
+              const max = doc.getLinesNum() - 1;
+              const replaceLineDown = pos.line === max ? max : pos.line + 1;
+              const newPosDown = surmiseInfoFromPos(pos.replace({ line: replaceLineDown }), doc);
+              doc.updatePos(newPosDown);
+              cursor.updatePosition(newPosDown.position.x, newPosDown.position.y);
+              break;
+          }
         }
       }
     });

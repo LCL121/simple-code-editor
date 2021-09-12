@@ -1,7 +1,6 @@
 import { PosSticky, Point, PosMapCh, PosMapLine } from '../shared/type';
 import { Doc } from './doc';
-import { range, isString, isUndefined } from '../shared/utils';
-import { docLeftGap } from '../shared/constants';
+import { range, isString, isUndefined, isNumber } from '../shared/utils';
 
 interface PosOptions {
   line: number;
@@ -13,8 +12,8 @@ interface PosOptions {
 export class Pos {
   line: number;
   ch: number;
-  position: Point;
   sticky: PosSticky;
+  position: Point;
 
   constructor(options: PosOptions) {
     const { line, ch, sticky = null, position = { x: 0, y: 0 } } = options;
@@ -26,6 +25,25 @@ export class Pos {
 
   copy() {
     return Pos.copyPos(this);
+  }
+
+  replace(options: Partial<Omit<PosOptions, 'position'>>) {
+    const { line, ch, sticky } = options;
+    const newPos = this.copy();
+    if (isNumber(line)) {
+      newPos.line = line;
+    }
+    if (isNumber(ch)) {
+      newPos.ch = ch;
+    }
+    if (sticky) {
+      newPos.sticky = sticky;
+    }
+    return newPos;
+  }
+
+  setPosition(position: Point) {
+    this.position = position;
   }
 
   static cmp(a: Pos, b: Pos) {
@@ -40,7 +58,8 @@ export class Pos {
     return new Pos({
       line: x.line,
       ch: x.ch,
-      sticky: x.sticky
+      sticky: x.sticky,
+      position: x.position
     });
   }
 
@@ -188,6 +207,41 @@ function surmisePosChInfo(lineText: PosMapLine, x: number, docX: number, overLin
   };
 }
 
-export function surmiseInfoFromPos(pos: Pos) {
-  console.log(pos);
+export function surmiseInfoFromPos(pos: Pos, doc: Doc): Pos {
+  const lineText = getLineTextMap(pos.line, doc);
+  const docX = doc.getDocRect()?.x;
+  function searchSpan(): PosMapCh {
+    // TODO
+    return {} as PosMapCh;
+  }
+  // const posX = judgeChBySticky(pos.ch, pos.sticky);
+  const span = lineText.length === 1 ? lineText[0] : searchSpan();
+  if (isUndefined(span.rect)) {
+    pos.setPosition({
+      x: 0,
+      y: pos.line * doc.lineHeight
+    });
+    return pos;
+  }
+  const left = judgeChBySticky(pos.ch - span.startCh, pos.sticky);
+  let x: number;
+  if (span.endCh <= left) {
+    const rect = range(span.text, span.endCh - 1, span.endCh).getClientRects()[0];
+    x = rect.right - (docX || 0);
+  } else {
+    const rect = range(span.text, left, left - 1).getClientRects()[0];
+    x = rect.left - (docX || 0);
+  }
+  pos.setPosition({
+    x,
+    y: pos.line * doc.lineHeight
+  });
+  return pos;
+}
+
+function judgeChBySticky(ch: number, sticky: PosSticky) {
+  if (sticky === 'before') {
+    return ch;
+  }
+  return ch + 1;
 }

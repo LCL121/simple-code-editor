@@ -64,10 +64,10 @@ export class Doc implements VNode {
 
   updateDoc(change: Change) {
     const { from, to } = change;
-    for (let i = from.line; i <= to.line; i++) {
-      this.posMap[i] = undefined;
-    }
-    surmiseInfoFromPos(this.pos?.copy()!);
+    // for (let i = from.line; i <= to.line; i++) {
+    //   this.posMap[i] = undefined;
+    // }
+    // surmiseInfoFromPos(this.pos?.copy()!);
   }
 
   updatePos(pos: Pos) {
