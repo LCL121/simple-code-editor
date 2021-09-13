@@ -150,10 +150,11 @@ function surmisePosChInfo(lineText: PosMapLine, x: number, docX: number, overLin
     lineText.length === 1 ? lineText[0] : overLines ? lineText[lineText.length! - 1] : searchSpan(0, keys.length);
   let sticky: PosSticky = 'after';
   let chX = 0;
+  // 处理 text 为''，情况
   if (isUndefined(span.rect)) {
     return {
       ch: span.endCh,
-      sticky,
+      sticky: 'before' as PosSticky,
       chX
     };
   }
@@ -214,7 +215,6 @@ export function surmiseInfoFromPos(pos: Pos, doc: Doc): Pos {
     // TODO
     return {} as PosMapCh;
   }
-  // const posX = judgeChBySticky(pos.ch, pos.sticky);
   const span = lineText.length === 1 ? lineText[0] : searchSpan();
   if (isUndefined(span.rect)) {
     pos.setPosition({
@@ -229,7 +229,7 @@ export function surmiseInfoFromPos(pos: Pos, doc: Doc): Pos {
     const rect = range(span.text, span.endCh - 1, span.endCh).getClientRects()[0];
     x = rect.right - (docX || 0);
   } else {
-    const rect = range(span.text, left, left - 1).getClientRects()[0];
+    const rect = range(span.text, left, left + 1).getClientRects()[0];
     x = rect.left - (docX || 0);
   }
   pos.setPosition({
