@@ -13,6 +13,7 @@ export class Doc implements VNode {
   attrs: VNodeAttrs = [{ name: 'class', value: `${classPrefix}_doc` }];
   lineHeight = lineHeight;
   posMap: PosMap = {};
+  posMoveOver = false;
   pos?: Pos;
   constructor(text: string) {
     this.children = this.createLines(text.split(/\r\n?|\n/));

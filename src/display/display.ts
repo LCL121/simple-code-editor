@@ -27,6 +27,7 @@ export class Display {
   private static addEventListener(doc: Doc, input: Input, cursor: Cursor) {
     doc.ele?.addEventListener('mousedown', (e) => {
       e_preventDefault(e);
+      doc.posMoveOver = false;
       const pos = posFromMouse(doc, e);
       doc.updatePos(pos);
       if (activeElt() === document.body) {
@@ -87,6 +88,7 @@ function createVNodeElement(node: VNode): HTMLElement {
 function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
   if (keyboardMapKeys.includes(e.key)) {
     e_preventDefault(e);
+    doc.posMoveOver = false;
     const key = e.key as KeyboardMapKeys;
     const pos = doc.pos;
     if (pos) {

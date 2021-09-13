@@ -216,16 +216,22 @@ export function surmiseInfoFromPos(pos: Pos, doc: Doc): Pos {
     return {} as PosMapCh;
   }
   const span = lineText.length === 1 ? lineText[0] : searchSpan();
+  const left = judgeChBySticky(pos.ch - span.startCh, pos.sticky);
   if (isUndefined(span.rect)) {
+    if (left !== 0) {
+      doc.posMoveOver = true;
+    }
     pos.setPosition({
       x: 0,
       y: pos.line * doc.lineHeight
     });
     return pos;
   }
-  const left = judgeChBySticky(pos.ch - span.startCh, pos.sticky);
   let x: number;
   if (span.endCh <= left) {
+    if (span.endCh < left) {
+      doc.posMoveOver = true;
+    }
     const rect = range(span.text, span.endCh - 1, span.endCh).getClientRects()[0];
     x = rect.right - (docX || 0);
   } else {
