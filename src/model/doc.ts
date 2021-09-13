@@ -61,30 +61,54 @@ export class Doc implements VNode {
     };
   }
 
-  getLine(n: number) {
-    return this.children[n];
+  getLine(lineN: number) {
+    return this.children[lineN];
+  }
+
+  getLineText(lineN: number): string {
+    return this.children[lineN].text;
+  }
+
+  getLineLength(lineN: number): number {
+    return this.children[lineN].text.length;
+  }
+
+  removeLine(target: Line) {
+    const idx = this.children.indexOf(target);
+    if (idx !== -1) {
+      this.children.splice(idx, 1);
+      return true;
+    }
+    return false;
   }
 
   updateDoc(change: Change) {
     console.log(change);
     const { from, to } = change;
-    for (let i = from.line; i <= to.line; i++) {
+    const fromCh = judgeChBySticky(from.ch, from.sticky);
+    const fromLineN = from.line;
+    const toCh = judgeChBySticky(to.ch, to.sticky);
+    for (let i = fromLineN; i <= to.line; i++) {
       this.posMap[i] = undefined;
     }
-    const fromCh = judgeChBySticky(from.ch, from.sticky);
-    const toCh = judgeChBySticky(to.ch, to.sticky);
     if (change.origin === 'input') {
-      this.children[from.line].updateLine(change.text[0], fromCh);
-      this.children[from.line].effectTag = 'update';
-      this.effect.push(this.children[from.line]);
+      this.children[fromLineN].updateLine(change.text[0], fromCh);
+      this.children[fromLineN].effectTag = 'update';
+      this.effect.push(this.children[fromLineN]);
     } else if (change.origin === '-delete') {
       if (fromCh > 0) {
-        this.children[from.line].updateLine('', fromCh, 'l');
-        this.children[from.line].effectTag = 'update';
+        this.children[fromLineN].updateLine('', fromCh, 'l');
+        this.children[fromLineN].effectTag = 'update';
       } else {
-        this.children[from.line].effectTag = 'delete';
+        if (fromLineN === 0) {
+          return;
+        }
+        this.children[fromLineN].effectTag = 'delete';
+        this.children[fromLineN - 1].updateLine(this.getLineText(fromLineN), this.getLineLength(fromLineN - 1));
+        this.children[fromLineN - 1].effectTag = 'update';
+        this.effect.push(this.children[fromLineN - 1]);
       }
-      this.effect.push(this.children[from.line]);
+      this.effect.push(this.children[fromLineN]);
     }
   }
 

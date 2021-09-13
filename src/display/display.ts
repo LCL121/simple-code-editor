@@ -3,6 +3,7 @@ import { Doc } from '../model/doc';
 import { Change } from '../model/change';
 import { Input } from './input';
 import { Cursor } from './cursor';
+import { Gutters } from './gutters';
 import { PosSticky, VNode } from '../shared/type';
 import { posFromMouse, surmiseInfoFromPos, judgeChBySticky, Pos } from '../model/pos';
 import { createElement, createTextElement, isString, e_preventDefault, activeElt, makeArray } from '../shared/utils';
@@ -21,14 +22,14 @@ export class Display {
       Display.addEventListener(doc, input, cursor);
 
       requestAnimationFrame(() => {
-        Display.update(doc, cursor);
+        Display.update(doc, cursor, gutters);
       });
     } else {
       console.warn('doc initialized');
     }
   }
 
-  private static update(doc: Doc, cursor: Cursor) {
+  private static update(doc: Doc, cursor: Cursor, gutters: Gutters) {
     let update = false;
     while (doc.effect.length() > 0) {
       const line = doc.effect.shift();
@@ -37,7 +38,10 @@ export class Display {
           line.ele.innerText = line.text;
         } else if (line.effectTag === 'delete') {
           line.ele.remove();
+          doc.removeLine(line);
+          gutters.updateGutters(doc.getLinesNum());
         }
+        line.effectTag = undefined;
         update = true;
       }
     }
@@ -46,7 +50,7 @@ export class Display {
       cursor.updatePosition(doc.pos!.position.x, doc.pos!.position.y);
     }
     requestAnimationFrame(() => {
-      Display.update(doc, cursor);
+      Display.update(doc, cursor, gutters);
     });
   }
 
@@ -203,14 +207,15 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
               text: []
             })
           );
-          if (doc.pos?.ch === 0) {
-            if (doc.pos.line === 0) {
+          const chIdxDelete = judgeChBySticky(pos.ch, pos.sticky);
+          if (chIdxDelete === 0) {
+            if (pos.line === 0) {
               return;
             } else {
               doc.updatePos(
                 new Pos({
-                  line: doc.pos.line - 1,
-                  ch: doc.getLine(doc.pos.line - 1).text.length - 1,
+                  line: pos.line - 1,
+                  ch: doc.getLine(pos.line - 1).text.length - 1,
                   sticky: 'after'
                 })
               );
