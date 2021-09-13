@@ -239,7 +239,7 @@ export function surmiseInfoFromPos(pos: Pos, doc: Doc): Pos {
   return pos;
 }
 
-function judgeChBySticky(ch: number, sticky: PosSticky) {
+export function judgeChBySticky(ch: number, sticky: PosSticky) {
   if (sticky === 'before') {
     return ch;
   }
