@@ -1,5 +1,6 @@
 import { Line } from './line';
-import { Pos, surmiseInfoFromPos } from './pos';
+import { Pos, judgeChBySticky } from './pos';
+import { Effect } from './effect';
 import { Change } from './change';
 import { VNode, ParentVNode, VNodeEle, VNodeAttrs, PosMap } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
@@ -9,8 +10,9 @@ export class Doc implements VNode {
   children: Line[];
   ele: HTMLElement | undefined;
   init: boolean;
-  tag = 'div';
+  tag = 'pre';
   attrs: VNodeAttrs = [{ name: 'class', value: `${classPrefix}_doc` }];
+  effect = new Effect<Line>();
   lineHeight = lineHeight;
   posMap: PosMap = {};
   posMoveOver = false;
@@ -64,11 +66,26 @@ export class Doc implements VNode {
   }
 
   updateDoc(change: Change) {
+    console.log(change);
     const { from, to } = change;
-    // for (let i = from.line; i <= to.line; i++) {
-    //   this.posMap[i] = undefined;
-    // }
-    // surmiseInfoFromPos(this.pos?.copy()!);
+    for (let i = from.line; i <= to.line; i++) {
+      this.posMap[i] = undefined;
+    }
+    const fromCh = judgeChBySticky(from.ch, from.sticky);
+    const toCh = judgeChBySticky(to.ch, to.sticky);
+    if (change.origin === 'input') {
+      this.children[from.line].updateLine(change.text[0], fromCh);
+      this.children[from.line].effectTag = 'update';
+      this.effect.push(this.children[from.line]);
+    } else if (change.origin === '-delete') {
+      if (fromCh > 0) {
+        this.children[from.line].updateLine('', fromCh, 'l');
+        this.children[from.line].effectTag = 'update';
+      } else {
+        this.children[from.line].effectTag = 'delete';
+      }
+      this.effect.push(this.children[from.line]);
+    }
   }
 
   updatePos(pos: Pos) {

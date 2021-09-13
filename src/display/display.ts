@@ -19,9 +19,35 @@ export class Display {
       doc.init = false;
 
       Display.addEventListener(doc, input, cursor);
+
+      requestAnimationFrame(() => {
+        Display.update(doc, cursor);
+      });
     } else {
       console.warn('doc initialized');
     }
+  }
+
+  private static update(doc: Doc, cursor: Cursor) {
+    let update = false;
+    while (doc.effect.length() > 0) {
+      const line = doc.effect.shift();
+      if (line?.ele) {
+        if (line.effectTag === 'update') {
+          line.ele.innerText = line.text;
+        } else if (line.effectTag === 'delete') {
+          line.ele.remove();
+        }
+        update = true;
+      }
+    }
+    if (update) {
+      surmiseInfoFromPos(doc.pos!, doc);
+      cursor.updatePosition(doc.pos!.position.x, doc.pos!.position.y);
+    }
+    requestAnimationFrame(() => {
+      Display.update(doc, cursor);
+    });
   }
 
   private static addEventListener(doc: Doc, input: Input, cursor: Cursor) {
@@ -45,6 +71,10 @@ export class Display {
     input.ele.addEventListener('input', (event) => {
       const e = event as InputEvent;
       const type = e.inputType as InputTypes;
+      if (doc.posMoveOver) {
+        doc.updatePos(doc.pos!.replace({ ch: doc.getLine(doc.pos!.line).text.length - 1, sticky: 'after' }));
+        doc.posMoveOver = false;
+      }
       if (type === 'insertText') {
         if (e.data) {
           doc.updateDoc(
@@ -55,9 +85,9 @@ export class Display {
               text: makeArray<string>(e.data)
             })
           );
+          doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch + 1 }));
         }
       }
-      // doc.updateDoc();
     });
     input.ele.addEventListener('keydown', (e: KeyboardEvent) => {
       keydownFn(e, doc, cursor);
@@ -88,22 +118,21 @@ function createVNodeElement(node: VNode): HTMLElement {
 function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
   if (keyboardMapKeys.includes(e.key)) {
     e_preventDefault(e);
-    doc.posMoveOver = false;
     const key = e.key as KeyboardMapKeys;
     const pos = doc.pos;
     if (pos) {
       let newPos: Pos;
       switch (key) {
-        case 'Tab':
-          // doc.updateDoc();
-          break;
         case 'ArrowUp':
+          doc.posMoveOver = false;
           newPos = pos.replace({ line: pos.line === 0 ? 0 : pos.line - 1 });
           break;
         case 'ArrowDown':
+          doc.posMoveOver = false;
           newPos = pos.replace({ line: pos.line === doc.getLinesNum() - 1 ? pos.line : pos.line + 1 });
           break;
         case 'ArrowLeft':
+          doc.posMoveOver = false;
           const chIdxLeft = judgeChBySticky(pos.ch, pos.sticky);
           let newChLeft: number;
           let newLineLeft: number;
@@ -128,6 +157,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           });
           break;
         case 'ArrowRight':
+          doc.posMoveOver = false;
           const chIdxRight = judgeChBySticky(pos.ch, pos.sticky);
           let newChRight: number;
           let newLineRight: number;
@@ -152,11 +182,46 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           });
           break;
         case 'Home':
+          doc.posMoveOver = false;
           newPos = pos.replace({ ch: 0, sticky: 'before' });
           break;
         case 'End':
+          doc.posMoveOver = false;
           newPos = pos.replace({ ch: doc.getLine(pos.line).text.length - 1, sticky: 'after' });
           break;
+        case 'Tab':
+        case 'Backspace':
+          if (doc.posMoveOver) {
+            doc.updatePos(doc.pos!.replace({ ch: doc.getLine(doc.pos!.line).text.length - 1, sticky: 'after' }));
+            doc.posMoveOver = false;
+          }
+          doc.updateDoc(
+            new Change({
+              from: doc.pos!,
+              to: doc.pos!,
+              origin: '-delete',
+              text: []
+            })
+          );
+          if (doc.pos?.ch === 0) {
+            if (doc.pos.line === 0) {
+              return;
+            } else {
+              doc.updatePos(
+                new Pos({
+                  line: doc.pos.line - 1,
+                  ch: doc.getLine(doc.pos.line - 1).text.length - 1,
+                  sticky: 'after'
+                })
+              );
+            }
+          } else {
+            doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch - 1 }));
+          }
+          return;
+        case 'Delete':
+        case 'Enter':
+          return;
       }
       surmiseInfoFromPos(newPos!, doc);
       doc.updatePos(newPos!);
