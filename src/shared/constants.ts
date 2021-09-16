@@ -6,7 +6,17 @@ export const docLeftGap = 5 + 30 + 5;
 
 export const docTopGap = 5;
 
-export const changeOrigin = ['cut', 'undo', 'paste', 'input', '-delete', 'delete-', 'drag', 'compose'] as const;
+export const changeOrigin = [
+  'cut',
+  'undo',
+  'paste',
+  'input',
+  '-delete',
+  'delete-',
+  'drag',
+  'compose',
+  'enter'
+] as const;
 
 export type ChangeOrigin = typeof changeOrigin[number];
 

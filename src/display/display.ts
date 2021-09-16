@@ -33,12 +33,16 @@ export class Display {
     let update = false;
     while (doc.effect.length() > 0) {
       const line = doc.effect.shift();
-      if (line?.ele) {
+      if (line) {
         if (line.effectTag === 'update') {
-          line.ele.innerText = line.text;
+          line.ele!.innerText = line.text;
         } else if (line.effectTag === 'delete') {
-          line.ele.remove();
+          line.ele!.remove();
           doc.removeLine(line);
+          gutters.updateGutters(doc.getLinesNum());
+        } else if (line.effectTag === 'add') {
+          line.ele = createVNodeElement(line);
+          // line.parent?.ele?.insertBefore(line.ele, );
           gutters.updateGutters(doc.getLinesNum());
         }
         line.effectTag = undefined;
@@ -238,6 +242,26 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           );
           return;
         case 'Enter':
+          if (doc.posMoveOver) {
+            doc.updatePos(doc.pos!.replace({ ch: doc.getLine(doc.pos!.line).text.length - 1, sticky: 'after' }));
+            doc.posMoveOver = false;
+          }
+          doc.updateDoc(
+            new Change({
+              from: doc.pos!,
+              to: doc.pos!,
+              origin: 'enter',
+              text: []
+            })
+          );
+          doc.updatePos(
+            new Pos({
+              line: pos.line + 1,
+              ch: 0,
+              sticky: 'before'
+            })
+          );
+          return;
         case 'Tab':
           return;
       }

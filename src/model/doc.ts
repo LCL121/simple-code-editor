@@ -30,6 +30,10 @@ export class Doc implements VNode {
     return result;
   }
 
+  createLine(lineText: string) {
+    return new Line(lineText, this);
+  }
+
   getCode() {
     const lines = this.children;
     const result = [];
@@ -73,6 +77,14 @@ export class Doc implements VNode {
     return this.children[lineN].text.length;
   }
 
+  pushLine(target: Line, lineN?: number) {
+    if (lineN) {
+      this.children.splice(lineN, 0, target);
+    } else {
+      this.children.push(target);
+    }
+  }
+
   removeLine(target: Line) {
     const idx = this.children.indexOf(target);
     if (idx !== -1) {
@@ -93,33 +105,50 @@ export class Doc implements VNode {
       this.posMap[i] = undefined;
     }
     if (change.origin === 'input') {
-      this.children[fromLineN].updateLine(change.text[0], fromCh);
+      this.children[fromLineN].updateLine({ text: change.text[0], tag: 'add', ch: fromCh });
       this.children[fromLineN].effectTag = 'update';
       this.effect.push(this.children[fromLineN]);
+    } else if (change.origin === 'enter') {
+      const fromLineText = this.getLineText(fromLineN);
+      this.children[fromLineN].updateLine({ tag: 'replace', text: fromLineText.substring(0, fromCh) });
+      this.children[fromLineN].effectTag = 'update';
+      this.effect.push(this.children[fromLineN]);
+      const newLine = this.createLine(fromLineText.substring(fromCh));
+      newLine.effectTag = 'add';
+      this.pushLine(newLine, fromLineN);
+      this.effect.push(newLine);
     } else if (change.origin === '-delete') {
       if (fromCh > 0) {
-        this.children[fromLineN].updateLine('', fromCh, 'l');
+        this.children[fromLineN].updateLine({ tag: 'delete', ch: fromCh });
         this.children[fromLineN].effectTag = 'update';
       } else {
         if (fromLineN === 0) {
           return;
         }
         this.children[fromLineN].effectTag = 'delete';
-        this.children[fromLineN - 1].updateLine(this.getLineText(fromLineN), this.getLineLength(fromLineN - 1));
+        this.children[fromLineN - 1].updateLine({
+          tag: 'add',
+          text: this.getLineText(fromLineN),
+          ch: this.getLineLength(fromLineN - 1)
+        });
         this.children[fromLineN - 1].effectTag = 'update';
         this.effect.push(this.children[fromLineN - 1]);
       }
       this.effect.push(this.children[fromLineN]);
     } else if (change.origin === 'delete-') {
       if (fromCh < this.getLineLength(fromLineN)) {
-        this.children[fromLineN].updateLine('', fromCh, 'r');
+        this.children[fromLineN].updateLine({ tag: 'delete', ch: fromCh, deleteDirection: 'r' });
         this.children[fromLineN].effectTag = 'update';
       } else {
         if (fromLineN === this.getLinesNum() - 1) {
           return;
         } else {
           this.children[fromLineN + 1].effectTag = 'delete';
-          this.children[fromLineN].updateLine(this.getLineText(fromLineN + 1), this.getLineLength(fromLineN));
+          this.children[fromLineN].updateLine({
+            tag: 'add',
+            text: this.getLineText(fromLineN + 1),
+            ch: this.getLineLength(fromLineN)
+          });
           this.children[fromLineN].effectTag = 'update';
           this.effect.push(this.children[fromLineN + 1]);
         }

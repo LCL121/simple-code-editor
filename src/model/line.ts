@@ -2,6 +2,13 @@ import { VNode, ChildeVNode, ParentVNode, VNodeEle, VNodeAttrs } from '../shared
 import { classPrefix } from '../shared/constants';
 import { Span } from './span';
 
+interface UpdateLineOptions {
+  tag: 'add' | 'replace' | 'delete' | 'slice';
+  ch?: number;
+  text?: string;
+  deleteDirection?: 'l' | 'r';
+}
+
 export class Line implements VNode {
   children: Span[] | string;
   parent: ParentVNode;
@@ -17,14 +24,19 @@ export class Line implements VNode {
     this.text = text;
   }
 
-  updateLine(text: string, ch: number, deleteDirection?: 'l' | 'r') {
+  updateLine(options: UpdateLineOptions) {
+    const { tag, ch, deleteDirection = 'l', text = '' } = options;
     let newText: string;
-    if (deleteDirection === 'l') {
-      newText = this.text.substring(0, ch - 1) + this.text.substring(ch);
-    } else if (deleteDirection === 'r') {
-      newText = this.text.substring(0, ch) + this.text.substring(ch + 1);
+    if (tag === 'add') {
+      newText = this.text.substring(0, ch) + text + this.text.substring(ch!);
+    } else if (tag === 'delete') {
+      if (deleteDirection === 'l') {
+        newText = this.text.substring(0, ch! - 1) + this.text.substring(ch!);
+      } else {
+        newText = this.text.substring(0, ch) + this.text.substring(ch! + 1);
+      }
     } else {
-      newText = this.text.substring(0, ch) + text + this.text.substring(ch);
+      newText = text!;
     }
     this.text = newText;
     this.children = newText;
