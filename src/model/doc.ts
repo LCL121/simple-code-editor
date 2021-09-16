@@ -88,6 +88,7 @@ export class Doc implements VNode {
     const fromCh = judgeChBySticky(from.ch, from.sticky);
     const fromLineN = from.line;
     const toCh = judgeChBySticky(to.ch, to.sticky);
+    const toLineN = to.line;
     for (let i = fromLineN; i <= to.line; i++) {
       this.posMap[i] = undefined;
     }
@@ -107,6 +108,21 @@ export class Doc implements VNode {
         this.children[fromLineN - 1].updateLine(this.getLineText(fromLineN), this.getLineLength(fromLineN - 1));
         this.children[fromLineN - 1].effectTag = 'update';
         this.effect.push(this.children[fromLineN - 1]);
+      }
+      this.effect.push(this.children[fromLineN]);
+    } else if (change.origin === 'delete-') {
+      if (fromCh < this.getLineLength(fromLineN)) {
+        this.children[fromLineN].updateLine('', fromCh, 'r');
+        this.children[fromLineN].effectTag = 'update';
+      } else {
+        if (fromLineN === this.getLinesNum() - 1) {
+          return;
+        } else {
+          this.children[fromLineN + 1].effectTag = 'delete';
+          this.children[fromLineN].updateLine(this.getLineText(fromLineN + 1), this.getLineLength(fromLineN));
+          this.children[fromLineN].effectTag = 'update';
+          this.effect.push(this.children[fromLineN + 1]);
+        }
       }
       this.effect.push(this.children[fromLineN]);
     }

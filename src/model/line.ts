@@ -19,8 +19,10 @@ export class Line implements VNode {
 
   updateLine(text: string, ch: number, deleteDirection?: 'l' | 'r') {
     let newText: string;
-    if (deleteDirection) {
+    if (deleteDirection === 'l') {
       newText = this.text.substring(0, ch - 1) + this.text.substring(ch);
+    } else if (deleteDirection === 'r') {
+      newText = this.text.substring(0, ch) + this.text.substring(ch + 1);
     } else {
       newText = this.text.substring(0, ch) + text + this.text.substring(ch);
     }

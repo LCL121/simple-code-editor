@@ -193,7 +193,6 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           doc.posMoveOver = false;
           newPos = pos.replace({ ch: doc.getLine(pos.line).text.length - 1, sticky: 'after' });
           break;
-        case 'Tab':
         case 'Backspace':
           if (doc.posMoveOver) {
             doc.updatePos(doc.pos!.replace({ ch: doc.getLine(doc.pos!.line).text.length - 1, sticky: 'after' }));
@@ -207,8 +206,8 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
               text: []
             })
           );
-          const chIdxDelete = judgeChBySticky(pos.ch, pos.sticky);
-          if (chIdxDelete === 0) {
+          const chIdxBackSpace = judgeChBySticky(pos.ch, pos.sticky);
+          if (chIdxBackSpace === 0) {
             if (pos.line === 0) {
               return;
             } else {
@@ -225,7 +224,21 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           }
           return;
         case 'Delete':
+          if (doc.posMoveOver) {
+            doc.updatePos(doc.pos!.replace({ ch: doc.getLine(doc.pos!.line).text.length - 1, sticky: 'after' }));
+            doc.posMoveOver = false;
+          }
+          doc.updateDoc(
+            new Change({
+              from: doc.pos!,
+              to: doc.pos!,
+              origin: 'delete-',
+              text: []
+            })
+          );
+          return;
         case 'Enter':
+        case 'Tab':
           return;
       }
       surmiseInfoFromPos(newPos!, doc);

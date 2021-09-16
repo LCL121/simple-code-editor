@@ -42,6 +42,10 @@ export class Pos {
     return newPos;
   }
 
+  equalCursorPos(pos: Pos) {
+    return Pos.equalCursorPos(this, pos);
+  }
+
   setPosition(position: Point) {
     this.position = position;
   }
