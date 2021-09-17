@@ -15,6 +15,14 @@ export class Effect<T> {
     }
   }
 
+  firstEffect() {
+    return this.queue[0];
+  }
+
+  lastEffect() {
+    return this.queue[this.length() - 1];
+  }
+
   has(i: T) {
     if (this.queue.includes(i)) {
       return true;

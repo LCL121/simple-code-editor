@@ -106,6 +106,12 @@ export class Doc implements VNode {
     return false;
   }
 
+  clearPosMap(fromLineN: number, toLineN = fromLineN) {
+    for (let i = fromLineN; i <= toLineN; i++) {
+      this.posMap[i] = undefined;
+    }
+  }
+
   updateDoc(change: Change) {
     console.log(change);
     const { from, to } = change;
@@ -113,9 +119,7 @@ export class Doc implements VNode {
     const fromLineN = from.line;
     const toCh = judgeChBySticky(to.ch, to.sticky);
     const toLineN = to.line;
-    for (let i = fromLineN; i <= to.line; i++) {
-      this.posMap[i] = undefined;
-    }
+    this.clearPosMap(fromLineN, toLineN);
     if (change.origin === 'input') {
       this.children[fromLineN].updateLine({ text: change.text[0], tag: 'add', ch: fromCh });
       this.children[fromLineN].effectTag = 'update';
@@ -137,6 +141,7 @@ export class Doc implements VNode {
         if (fromLineN === 0) {
           return;
         }
+        this.clearPosMap(fromLineN - 1);
         this.children[fromLineN].effectTag = 'delete';
         this.children[fromLineN - 1].updateLine({
           tag: 'add',
@@ -155,6 +160,7 @@ export class Doc implements VNode {
         if (fromLineN === this.getMaxLineN()) {
           return;
         } else {
+          this.clearPosMap(fromLineN + 1);
           this.children[fromLineN + 1].effectTag = 'delete';
           this.children[fromLineN].updateLine({
             tag: 'add',

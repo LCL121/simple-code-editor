@@ -80,7 +80,7 @@ export class Display {
       const e = event as InputEvent;
       const type = e.inputType as InputTypes;
       if (doc.posMoveOver) {
-        doc.updatePos(doc.pos!.replace({ ch: doc.getLine(doc.pos!.line).text.length - 1, sticky: 'after' }));
+        doc.updatePos(doc.pos!.replace({ ch: doc.getLineLength(doc.pos!.line) - 1, sticky: 'after' }));
         doc.posMoveOver = false;
       }
       if (type === 'insertText') {
@@ -199,37 +199,38 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           break;
         case 'Backspace':
           if (doc.posMoveOver) {
-            doc.updatePos(doc.pos!.replace({ ch: doc.getLine(doc.pos!.line).text.length - 1, sticky: 'after' }));
+            doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
             doc.posMoveOver = false;
           }
-          doc.updateDoc(
-            new Change({
-              from: doc.pos!,
-              to: doc.pos!,
-              origin: '-delete',
-              text: []
-            })
-          );
-          const chIdxBackSpace = judgeChBySticky(pos.ch, pos.sticky);
+          const currentPosBackSpace = doc.pos!;
+          const chIdxBackSpace = judgeChBySticky(currentPosBackSpace.ch, currentPosBackSpace.sticky);
           if (chIdxBackSpace === 0) {
-            if (pos.line === 0) {
+            if (currentPosBackSpace.line === 0) {
               return;
             } else {
               doc.updatePos(
                 new Pos({
-                  line: pos.line - 1,
-                  ch: doc.getLine(pos.line - 1).text.length - 1,
+                  line: currentPosBackSpace.line - 1,
+                  ch: doc.getLineLength(currentPosBackSpace.line - 1) - 1,
                   sticky: 'after'
                 })
               );
             }
           } else {
-            doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch - 1 }));
+            doc.updatePos(currentPosBackSpace!.replace({ ch: currentPosBackSpace!.ch - 1 }));
           }
+          doc.updateDoc(
+            new Change({
+              from: currentPosBackSpace!,
+              to: currentPosBackSpace!,
+              origin: '-delete',
+              text: []
+            })
+          );
           return;
         case 'Delete':
           if (doc.posMoveOver) {
-            doc.updatePos(doc.pos!.replace({ ch: doc.getLine(doc.pos!.line).text.length - 1, sticky: 'after' }));
+            doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
             doc.posMoveOver = false;
           }
           doc.updateDoc(
@@ -243,37 +244,44 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           return;
         case 'Enter':
           if (doc.posMoveOver) {
-            doc.updatePos(doc.pos!.replace({ ch: doc.getLine(doc.pos!.line).text.length - 1, sticky: 'after' }));
+            doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
             doc.posMoveOver = false;
           }
-          doc.updateDoc(
-            new Change({
-              from: doc.pos!,
-              to: doc.pos!,
-              origin: 'enter',
-              text: []
-            })
-          );
+          const currentPosEnter = doc.pos!;
           doc.updatePos(
             new Pos({
-              line: pos.line + 1,
+              line: currentPosEnter.line + 1,
               ch: 0,
               sticky: 'before'
             })
           );
-          return;
-        case 'Tab':
           doc.updateDoc(
             new Change({
-              from: doc.pos!,
-              to: doc.pos!,
+              from: currentPosEnter!,
+              to: currentPosEnter!,
+              origin: 'enter',
+              text: []
+            })
+          );
+          return;
+        case 'Tab':
+          if (doc.posMoveOver) {
+            doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
+            doc.posMoveOver = false;
+          }
+          const currentPosTab = doc.pos!;
+          doc.updatePos(currentPosTab!.replace({ ch: currentPosTab!.ch + 2 }));
+          doc.updateDoc(
+            new Change({
+              from: currentPosTab!,
+              to: currentPosTab!,
               origin: 'input',
               text: ['  ']
             })
           );
-          doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch + 2 }));
           return;
       }
+      // 移动光标 处理
       surmiseInfoFromPos(newPos!, doc);
       doc.updatePos(newPos!);
       cursor.updatePosition(newPos!.position.x, newPos!.position.y);
