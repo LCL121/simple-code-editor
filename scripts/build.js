@@ -4,6 +4,6 @@ const rimraf = require('rimraf');
 
 rimraf.sync(path.resolve(__dirname, 'dist'));
 
-execa('rollup', ['-c'], {
+execa('rollup', ['-c', '--env=build'], {
   stdio: 'inherit'
 });

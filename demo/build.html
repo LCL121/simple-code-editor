@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Code Editor</title>
+  <link rel="stylesheet" href="../dist/simpleCodeEditor.css">
+  <script src="../dist/simpleCodeEditor.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    const test = new SimpleCodeEditor({ value: 'const a = 1;\nlet b = 2;\n\nvar c = 3;\na\n'});
+    test.render(document.getElementById('root'));
+    window.test = test;
+  </script>
+</body>
+</html>
