@@ -6,8 +6,9 @@ import { Cursor } from './cursor';
 import { Gutters } from './gutters';
 import { PosSticky, VNode } from '../shared/type';
 import { posFromMouse, surmiseInfoFromPos, judgeChBySticky, Pos } from '../model/pos';
+import { Selection } from '../model/selection';
 import { createElement, createTextElement, isString, e_preventDefault, activeElt, makeArray } from '../shared/utils';
-import { KeyboardMapKeys, keyboardMapKeys, keyboardMap, inputTypes, InputTypes } from '../shared/constants';
+import { KeyboardMapKeys, keyboardMapKeys, keyboardMap, inputTypes, InputTypes, docLeftGap } from '../shared/constants';
 
 export class Display {
   static init(editor: SimpleCodeEditor, container: HTMLElement) {
@@ -62,12 +63,31 @@ export class Display {
     doc.ele?.addEventListener('mousedown', (e) => {
       e_preventDefault(e);
       doc.posMoveOver = false;
+      doc.mouseDown = true;
       const pos = posFromMouse(doc, e);
+      doc.updateSelection(new Selection(pos, pos));
       doc.updatePos(pos);
       if (activeElt() === document.body) {
         input.focus();
         cursor.show();
       }
+      cursor.updatePosition(pos.position.x, pos.position.y);
+    });
+    doc.ele?.addEventListener('mousemove', (e) => {
+      requestAnimationFrame(() => {
+        if (doc.mouseDown) {
+          const pos = posFromMouse(doc, e);
+          doc.sel?.updateEndPos(pos);
+          doc.updatePos(pos);
+          cursor.updatePosition(pos.position.x, pos.position.y);
+        }
+      });
+    });
+    doc.ele?.addEventListener('mouseup', (e) => {
+      doc.mouseDown = false;
+      const pos = posFromMouse(doc, e);
+      doc.sel?.updateEndPos(pos);
+      doc.updatePos(pos);
       cursor.updatePosition(pos.position.x, pos.position.y);
     });
     input.ele.addEventListener('blur', () => {

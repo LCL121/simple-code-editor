@@ -2,6 +2,7 @@ import { Line } from './line';
 import { Pos, judgeChBySticky } from './pos';
 import { Effect } from './effect';
 import { Change } from './change';
+import { Selection } from './selection';
 import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
 
@@ -15,9 +16,11 @@ export class Doc implements VNode {
   attrs: VNodeAttrs = [{ name: 'class', value: `${classPrefix}_doc` }];
   effect = new Effect<Line>();
   lineHeight = lineHeight;
+  mouseDown = false;
   posMap: PosMap = {};
   posMoveOver = false;
   pos?: Pos;
+  sel?: Selection;
   constructor(text: string) {
     this.children = this.createLines(text.split(/\r\n?|\n/));
     this.init = true;
@@ -177,5 +180,9 @@ export class Doc implements VNode {
 
   updatePos(pos: Pos) {
     this.pos = pos;
+  }
+
+  updateSelection(sel: Selection) {
+    this.sel = sel;
   }
 }
