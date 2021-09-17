@@ -2,6 +2,7 @@ export interface VNode {
   tag: string;
   parent: ParentVNode;
   children: ChildeVNode;
+  nextSibling: NextSiblingVNode;
   ele: VNodeEle;
   attrs: VNodeAttrs;
 }
@@ -9,6 +10,8 @@ export interface VNode {
 export type ParentVNode = VNode | undefined;
 
 export type ChildeVNode = VNode[] | string | undefined;
+
+export type NextSiblingVNode = VNode | undefined;
 
 export type VNodeEle = HTMLElement | Text | undefined;
 

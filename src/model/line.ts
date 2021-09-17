@@ -1,4 +1,4 @@
-import { VNode, ChildeVNode, ParentVNode, VNodeEle, VNodeAttrs } from '../shared/type';
+import { VNode, NextSiblingVNode, ParentVNode, VNodeEle, VNodeAttrs } from '../shared/type';
 import { classPrefix } from '../shared/constants';
 import { Span } from './span';
 
@@ -12,15 +12,17 @@ interface UpdateLineOptions {
 export class Line implements VNode {
   children: Span[] | string;
   parent: ParentVNode;
+  nextSibling: NextSiblingVNode = undefined;
   ele: HTMLElement | undefined;
   tag = 'p';
   attrs: VNodeAttrs = [{ name: 'class', value: `${classPrefix}_line` }];
   text: string;
   effectTag?: 'update' | 'delete' | 'add';
 
-  constructor(text: string, parent: VNode) {
+  constructor(text: string, parent: VNode, nextSibling?: VNode) {
     this.children = text;
     this.parent = parent;
+    this.nextSibling = nextSibling;
     this.text = text;
   }
 

@@ -2,12 +2,13 @@ import { Line } from './line';
 import { Pos, judgeChBySticky } from './pos';
 import { Effect } from './effect';
 import { Change } from './change';
-import { VNode, ParentVNode, VNodeEle, VNodeAttrs, PosMap } from '../shared/type';
+import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
 
 export class Doc implements VNode {
   parent: ParentVNode;
   children: Line[];
+  nextSibling: NextSiblingVNode = undefined;
   ele: HTMLElement | undefined;
   init: boolean;
   tag = 'pre';
@@ -24,8 +25,12 @@ export class Doc implements VNode {
 
   createLines(linesText: string[]) {
     const result: Line[] = [];
-    for (const text of linesText) {
-      result.push(new Line(text, this));
+    for (let idx = 0; idx < linesText.length; idx++) {
+      const newLine = new Line(linesText[idx], this);
+      if (idx > 0) {
+        result[idx - 1].nextSibling = newLine;
+      }
+      result.push(newLine);
     }
     return result;
   }
@@ -77,10 +82,17 @@ export class Doc implements VNode {
     return this.children[lineN].text.length;
   }
 
+  getLastLine() {
+    return this.children[this.getMaxLineN()];
+  }
+
   pushLine(target: Line, lineN?: number) {
     if (lineN) {
+      target.nextSibling = this.getLine(lineN);
+      this.getLine(lineN - 1).nextSibling = target;
       this.children.splice(lineN, 0, target);
     } else {
+      this.getLastLine().nextSibling = target;
       this.children.push(target);
     }
   }
@@ -115,7 +127,7 @@ export class Doc implements VNode {
       this.effect.push(this.children[fromLineN]);
       const newLine = this.createLine(fromLineText.substring(fromCh));
       newLine.effectTag = 'add';
-      this.pushLine(newLine, fromLineN);
+      this.pushLine(newLine, fromLineN + 1);
       this.effect.push(newLine);
     } else if (change.origin === '-delete') {
       if (fromCh > 0) {
@@ -140,7 +152,7 @@ export class Doc implements VNode {
         this.children[fromLineN].updateLine({ tag: 'delete', ch: fromCh, deleteDirection: 'r' });
         this.children[fromLineN].effectTag = 'update';
       } else {
-        if (fromLineN === this.getLinesNum() - 1) {
+        if (fromLineN === this.getMaxLineN()) {
           return;
         } else {
           this.children[fromLineN + 1].effectTag = 'delete';

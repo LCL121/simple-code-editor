@@ -42,7 +42,7 @@ export class Display {
           gutters.updateGutters(doc.getLinesNum());
         } else if (line.effectTag === 'add') {
           line.ele = createVNodeElement(line);
-          // line.parent?.ele?.insertBefore(line.ele, );
+          line.parent?.ele?.insertBefore(line.ele, line.nextSibling?.ele!);
           gutters.updateGutters(doc.getLinesNum());
         }
         line.effectTag = undefined;
@@ -137,7 +137,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           break;
         case 'ArrowDown':
           doc.posMoveOver = false;
-          newPos = pos.replace({ line: pos.line === doc.getLinesNum() - 1 ? pos.line : pos.line + 1 });
+          newPos = pos.replace({ line: pos.line === doc.getMaxLineN() ? pos.line : pos.line + 1 });
           break;
         case 'ArrowLeft':
           doc.posMoveOver = false;
@@ -171,7 +171,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           let newLineRight: number;
           let newStickyRight: PosSticky;
           if (doc.getLine(pos.line).text.length === chIdxRight) {
-            if (pos.line === doc.getLinesNum() - 1) {
+            if (pos.line === doc.getMaxLineN()) {
               return;
             } else {
               newLineRight = pos.line + 1;
@@ -263,6 +263,15 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           );
           return;
         case 'Tab':
+          doc.updateDoc(
+            new Change({
+              from: doc.pos!,
+              to: doc.pos!,
+              origin: 'input',
+              text: ['  ']
+            })
+          );
+          doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch + 2 }));
           return;
       }
       surmiseInfoFromPos(newPos!, doc);

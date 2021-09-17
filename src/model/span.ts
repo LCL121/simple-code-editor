@@ -1,8 +1,9 @@
-import { VNode, ChildeVNode, ParentVNode, VNodeEle, VNodeAttrs } from '../shared/type';
+import { VNode, ChildeVNode, ParentVNode, NextSiblingVNode, VNodeAttrs } from '../shared/type';
 
 export class Span implements VNode {
   children: ChildeVNode;
   parent: ParentVNode;
+  nextSibling: NextSiblingVNode = undefined;
   ele: Text | undefined;
   tag = 'span';
   attrs: VNodeAttrs;
