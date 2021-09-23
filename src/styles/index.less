@@ -19,6 +19,20 @@ html, body, p, pre, div, span {
     left: 0;
   }
 
+  &_selected {
+    position: absolute;
+    left: 35px;
+    &_item {
+      position: absolute;
+      background-color: #d9d9d9;
+      height: @line-height;
+
+      &_focus {
+        background-color: #d7d4f0;
+      }
+    }
+  }
+
   &_gutters {
     width: @gutters-width;
     margin-right: @gutters-margin-right;

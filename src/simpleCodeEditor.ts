@@ -4,6 +4,7 @@ import { Input } from './display/input';
 import { Cursor } from './display/cursor';
 import { Gutters } from './display/gutters';
 import { Wrapper } from './display/wrapper';
+import { Selected } from './display/selected';
 import './styles/index.less';
 
 interface SimpleCodeEditorOptions {
@@ -16,6 +17,7 @@ class SimpleCodeEditor {
   cursor: Cursor;
   gutters: Gutters;
   wrapper: Wrapper;
+  selected: Selected;
   constructor(options: SimpleCodeEditorOptions) {
     const { value } = options;
     this.doc = new Doc(value);
@@ -23,6 +25,7 @@ class SimpleCodeEditor {
     this.cursor = new Cursor();
     this.gutters = new Gutters(this.doc.getLinesNum());
     this.wrapper = new Wrapper();
+    this.selected = new Selected();
   }
 
   render(container: HTMLElement) {

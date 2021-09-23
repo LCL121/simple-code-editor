@@ -4,6 +4,7 @@ import { Change } from '../model/change';
 import { Input } from './input';
 import { Cursor } from './cursor';
 import { Gutters } from './gutters';
+import { Selected } from './selected';
 import { PosSticky, VNode } from '../shared/type';
 import { posFromMouse, surmiseInfoFromPos, judgeChBySticky, Pos } from '../model/pos';
 import { Selection } from '../model/selection';
@@ -12,25 +13,28 @@ import { KeyboardMapKeys, keyboardMapKeys, keyboardMap, inputTypes, InputTypes, 
 
 export class Display {
   static init(editor: SimpleCodeEditor, container: HTMLElement) {
-    const { doc, input, gutters, cursor, wrapper } = editor;
+    const { doc, input, gutters, cursor, wrapper, selected } = editor;
     if (doc.init) {
       const docEle = createVNodeElement(doc);
-      wrapper.ele.append(input.ele, gutters.ele, docEle);
+      wrapper.ele.append(input.ele, gutters.ele, selected.ele, docEle);
       docEle.appendChild(cursor.ele);
       container.appendChild(wrapper.ele);
       doc.init = false;
 
-      Display.addEventListener(doc, input, cursor);
+      Display.addEventListener(doc, input, cursor, selected);
 
       requestAnimationFrame(() => {
-        Display.update(doc, cursor, gutters);
+        Display.update(doc, cursor, gutters, selected);
       });
     } else {
       console.warn('doc initialized');
     }
   }
 
-  private static update(doc: Doc, cursor: Cursor, gutters: Gutters) {
+  private static update(doc: Doc, cursor: Cursor, gutters: Gutters, selected: Selected) {
+    if (doc.mouseDown && doc.sel) {
+      selected.updateSelectedLines(doc.sel);
+    }
     let update = false;
     while (doc.effect.length() > 0) {
       const line = doc.effect.shift();
@@ -55,13 +59,14 @@ export class Display {
       cursor.updatePosition(doc.pos!.position.x, doc.pos!.position.y);
     }
     requestAnimationFrame(() => {
-      Display.update(doc, cursor, gutters);
+      Display.update(doc, cursor, gutters, selected);
     });
   }
 
-  private static addEventListener(doc: Doc, input: Input, cursor: Cursor) {
+  private static addEventListener(doc: Doc, input: Input, cursor: Cursor, selected: Selected) {
     doc.ele?.addEventListener('mousedown', (e) => {
       e_preventDefault(e);
+      selected.clearSelectedItem();
       doc.posMoveOver = false;
       doc.mouseDown = true;
       const pos = posFromMouse(doc, e);
