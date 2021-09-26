@@ -33,7 +33,7 @@ export class Display {
 
   private static update(doc: Doc, cursor: Cursor, gutters: Gutters, selected: Selected) {
     if (doc.mouseDown && doc.sel) {
-      selected.updateSelectedLines(doc.sel);
+      selected.update(doc.sel, doc.getDocRect()!.width);
     }
     let update = false;
     while (doc.effect.length() > 0) {
@@ -66,7 +66,7 @@ export class Display {
   private static addEventListener(doc: Doc, input: Input, cursor: Cursor, selected: Selected) {
     doc.ele?.addEventListener('mousedown', (e) => {
       e_preventDefault(e);
-      selected.clearSelectedItem();
+      selected.hidden();
       doc.posMoveOver = false;
       doc.mouseDown = true;
       const pos = posFromMouse(doc, e);

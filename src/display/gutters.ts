@@ -11,7 +11,7 @@ export class Gutters {
     this.ele = gutters;
   }
 
-  createGutters(num: number) {
+  private createGutters(num: number) {
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < num; i++) {
       fragment.appendChild(this.createGutter(i + 1));
@@ -19,7 +19,7 @@ export class Gutters {
     return fragment;
   }
 
-  createGutter(num: number) {
+  private createGutter(num: number) {
     const div = document.createElement('div');
     div.setAttribute('class', `${classPrefix}_gutters_item`);
     div.innerText = `${num}`;

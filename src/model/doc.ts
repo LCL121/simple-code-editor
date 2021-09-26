@@ -26,7 +26,7 @@ export class Doc implements VNode {
     this.init = true;
   }
 
-  createLines(linesText: string[]) {
+  private createLines(linesText: string[]) {
     const result: Line[] = [];
     for (let idx = 0; idx < linesText.length; idx++) {
       const newLine = new Line(linesText[idx], this);
@@ -38,7 +38,7 @@ export class Doc implements VNode {
     return result;
   }
 
-  createLine(lineText: string) {
+  private createLine(lineText: string) {
     return new Line(lineText, this);
   }
 

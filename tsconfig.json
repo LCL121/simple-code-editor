@@ -9,6 +9,7 @@
     "declaration": false,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
+    "downlevelIteration": true,
     "typeRoots": [
       "node_modules/@types",
     ]
