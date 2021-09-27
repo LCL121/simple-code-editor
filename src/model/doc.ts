@@ -42,13 +42,41 @@ export class Doc implements VNode {
     return new Line(lineText, this);
   }
 
-  getCode() {
+  private _getSelectedCode(startPos: Pos, endPos: Pos): string {
+    if (startPos.cmpLine(endPos) === 0) {
+      return this.getLineText(startPos.line).substring(startPos.getPosChBySticky(), endPos.getPosChBySticky());
+    } else {
+      const lines = this.children;
+      const result: string[] = [];
+      result.push(this.getLineText(startPos.line).substring(startPos.getPosChBySticky()));
+      for (let i = startPos.line; i < endPos.line; i++) {
+        result.push(lines[i].text);
+      }
+      result.push(this.getLineText(endPos.line).substring(0, endPos.getPosChBySticky()));
+      return result.join('\n');
+    }
+  }
+
+  getCode(): string {
     const lines = this.children;
-    const result = [];
+    const result: string[] = [];
     for (const line of lines) {
       result.push(line.text);
     }
     return result.join('\n');
+  }
+
+  getSelectedCode(): string {
+    const sel = this.sel;
+    if (sel) {
+      const { startPos, endPos } = sel;
+      if (endPos.cmp(startPos) > 0) {
+        return this._getSelectedCode(startPos, endPos);
+      } else if (endPos.cmp(startPos) < 0) {
+        return this._getSelectedCode(endPos, startPos);
+      }
+    }
+    return '';
   }
 
   getDocRect() {

@@ -70,7 +70,7 @@ export class Display {
       doc.posMoveOver = false;
       doc.mouseDown = true;
       const pos = posFromMouse(doc, e);
-      doc.updateSelection(new Selection(pos, pos));
+      doc.updateSelection(new Selection(pos));
       doc.updatePos(pos);
       if (activeElt() === document.body) {
         input.focus();

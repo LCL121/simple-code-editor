@@ -37,6 +37,10 @@ class SimpleCodeEditor {
   getCode() {
     return this.doc.getCode();
   }
+
+  getSelectedCode() {
+    return this.doc.getSelectedCode();
+  }
 }
 
 export default SimpleCodeEditor;

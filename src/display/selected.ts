@@ -15,7 +15,7 @@ export class Selected {
   }
 
   private updateSelected(startPos: Pos, endPos: Pos, width: number) {
-    if (startPos.line !== endPos.line) {
+    if (startPos.cmpLine(endPos) !== 0) {
       this.updateSelectedItem(startPos.line, width, { start: startPos.position.x });
       for (let i = startPos.line + 1; i < endPos.line; i++) {
         this.updateSelectedItem(i, width);

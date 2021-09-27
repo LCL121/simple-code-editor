@@ -49,6 +49,13 @@ export class Pos {
     return Pos.cmp(this, target);
   }
 
+  /**
+   * @returns > 0 line大于目标，< 0 line小于目标
+   */
+  cmpLine(target: Pos) {
+    return Pos.cmpLine(this, target);
+  }
+
   equalCursorPos(pos: Pos) {
     return Pos.equalCursorPos(this, pos);
   }
@@ -63,6 +70,10 @@ export class Pos {
 
   static cmp(a: Pos, b: Pos) {
     return a.line - b.line || a.getPosChBySticky() - b.getPosChBySticky();
+  }
+
+  static cmpLine(a: Pos, b: Pos) {
+    return a.line - b.line;
   }
 
   static equalCursorPos(a: Pos, b: Pos) {
