@@ -14,30 +14,18 @@ export class Selected {
     this.ele = selected;
   }
 
-  private updateSelected(startPos: Pos, endPos: Pos, width: number) {
-    if (startPos.cmpLine(endPos) !== 0) {
-      this.updateSelectedItem(startPos.line, width, { start: startPos.position.x });
-      for (let i = startPos.line + 1; i < endPos.line; i++) {
-        this.updateSelectedItem(i, width);
-      }
-      this.updateSelectedItem(endPos.line, width, { end: endPos.position.x });
-    } else {
-      this.updateSelectedItem(startPos.line, width, { start: startPos.position.x, end: endPos.position.x });
-    }
-  }
-
   private updateSelectedItem(lineN: number, width: number, options?: { start?: number; end?: number }) {
     const div = this.selectedItem.get(lineN);
     const left = options?.start || 0;
     if (div) {
       div.style.left = `${left}px`;
-      div.style.width = options?.end ? `${options.end - left}px` : `${width - left}px`;
+      div.style.width = options?.end !== undefined ? `${options.end - left}px` : `${width - left}px`;
     } else {
       const item = document.createElement('div');
       item.setAttribute('class', focusClass);
       item.style.top = `${lineN * lineHeight}px`;
       item.style.left = `${left}px`;
-      item.style.width = options?.end ? `${options.end - left}px` : `${width - left}px`;
+      item.style.width = options?.end !== undefined ? `${options.end - left}px` : `${width - left}px`;
       this.selectedItem.set(lineN, item);
       this.ele.append(item);
     }
@@ -69,7 +57,15 @@ export class Selected {
     const { from, to, equal } = sel.sort();
     this.hidden();
     if (!equal) {
-      this.updateSelected(from, to, width);
+      if (from.cmpLine(to) !== 0) {
+        this.updateSelectedItem(from.line, width, { start: from.position.x });
+        for (let i = from.line + 1; i < to.line; i++) {
+          this.updateSelectedItem(i, width);
+        }
+        this.updateSelectedItem(to.line, width, { end: to.position.x });
+      } else {
+        this.updateSelectedItem(from.line, width, { start: from.position.x, end: to.position.x });
+      }
     }
   }
 }
