@@ -138,16 +138,16 @@ export class Doc implements VNode {
   }
 
   private updateDocEqualPos(change: Change) {
-    const { from, to } = change;
+    const { from, to, origin } = change;
     const fromCh = judgeChBySticky(from.ch, from.sticky);
     const fromLineN = from.line;
     const toLineN = to.line;
     this.clearPosMap(fromLineN, toLineN);
-    if (change.origin === 'input') {
+    if (origin === 'input') {
       this.children[fromLineN].updateLine({ text: change.text[0], tag: 'add', ch: fromCh });
       this.children[fromLineN].effectTag = 'update';
       this.effect.push(this.children[fromLineN]);
-    } else if (change.origin === 'enter') {
+    } else if (origin === 'enter') {
       const fromLineText = this.getLineText(fromLineN);
       this.children[fromLineN].updateLine({ tag: 'replace', text: fromLineText.substring(0, fromCh) });
       this.children[fromLineN].effectTag = 'update';
@@ -156,7 +156,7 @@ export class Doc implements VNode {
       newLine.effectTag = 'add';
       this.pushLine(newLine, fromLineN + 1);
       this.effect.push(newLine);
-    } else if (change.origin === '-delete') {
+    } else if (origin === '-delete') {
       if (fromCh > 0) {
         this.children[fromLineN].updateLine({ tag: 'delete', ch: fromCh });
         this.children[fromLineN].effectTag = 'update';
@@ -175,7 +175,7 @@ export class Doc implements VNode {
         this.effect.push(this.children[fromLineN - 1]);
       }
       this.effect.push(this.children[fromLineN]);
-    } else if (change.origin === 'delete-') {
+    } else if (origin === 'delete-') {
       if (fromCh < this.getLineLength(fromLineN)) {
         this.children[fromLineN].updateLine({ tag: 'delete', ch: fromCh, deleteDirection: 'r' });
         this.children[fromLineN].effectTag = 'update';
@@ -194,6 +194,10 @@ export class Doc implements VNode {
           this.effect.push(this.children[fromLineN + 1]);
         }
       }
+      this.effect.push(this.children[fromLineN]);
+    } else if (origin === 'tab') {
+      this.children[fromLineN].updateLine({ text: '  ', tag: 'add', ch: fromCh });
+      this.children[fromLineN].effectTag = 'update';
       this.effect.push(this.children[fromLineN]);
     }
   }
@@ -222,7 +226,6 @@ export class Doc implements VNode {
     } else if (origin === 'enter') {
       const fromLineText = this.getLineText(fromLineN);
       const toLineText = this.getLineText(toLineN);
-
       this.children[fromLineN].updateLine({ tag: 'replace', text: fromLineText.substring(0, fromCh) });
       this.children[fromLineN].effectTag = 'update';
       this.effect.push(this.children[fromLineN]);
@@ -232,6 +235,12 @@ export class Doc implements VNode {
       this.effect.push(newLine);
       for (let i = fromLineN + 1; i <= toLineN; i++) {
         this.children[i].effectTag = 'delete';
+        this.effect.push(this.children[i]);
+      }
+    } else if (origin === 'tab') {
+      for (let i = fromLineN; i <= toLineN; i++) {
+        this.children[i].updateLine({ tag: 'add', text: '  ', ch: 0 });
+        this.children[i].effectTag = 'update';
         this.effect.push(this.children[i]);
       }
     }

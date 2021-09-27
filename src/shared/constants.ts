@@ -15,7 +15,8 @@ export const changeOrigin = [
   'delete-',
   'drag',
   'compose',
-  'enter'
+  'enter',
+  'tab'
 ] as const;
 
 export type ChangeOrigin = typeof changeOrigin[number];

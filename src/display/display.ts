@@ -378,7 +378,23 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
         }
         case 'Tab': {
           if (doc.sel?.isValid()) {
+            const { from, to } = doc.sel.sort();
+            doc.updateDoc(
+              new Change({
+                from,
+                to,
+                origin: 'tab',
+                text: []
+              })
+            );
             // TODO
+            const { startPos, endPos } = doc.sel;
+            const newStartPos = startPos.replace({ ch: startPos.ch + 2 });
+            const newEndPos = endPos.replace({ ch: endPos.ch + 2 });
+            const newSel = new Selection(newStartPos, newEndPos);
+            doc.updatePos(newEndPos);
+            doc.updateSelection(newSel);
+            selected.update(newSel, doc.getDocRect()?.width!);
           } else {
             if (doc.posMoveOver) {
               doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
@@ -390,8 +406,8 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
               new Change({
                 from: currentPosTab!,
                 to: currentPosTab!,
-                origin: 'input',
-                text: ['  ']
+                origin: 'tab',
+                text: []
               })
             );
           }

@@ -53,9 +53,11 @@ export class Selected {
     }
   }
 
-  update(sel: Selection, width: number) {
+  update(sel: Selection, width: number, isHidden = true) {
     const { from, to, equal } = sel.sort();
-    this.hidden();
+    if (isHidden) {
+      this.hidden();
+    }
     if (!equal) {
       if (from.cmpLine(to) !== 0) {
         this.updateSelectedItem(from.line, width, { start: from.position.x });
