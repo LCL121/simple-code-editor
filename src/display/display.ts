@@ -134,7 +134,7 @@ export class Display {
       }
     });
     input.ele.addEventListener('keydown', (e: KeyboardEvent) => {
-      keydownFn(e, doc, cursor);
+      keydownFn(e, doc, cursor, selected);
     });
     input.ele.addEventListener('copy', (e) => {
       e_preventDefault(e);
@@ -161,6 +161,7 @@ export class Display {
         );
         selected.hidden();
         doc.updatePos(from);
+        doc.updateSelection(new Selection(from));
       }
     });
   }
@@ -180,7 +181,7 @@ function createVNodeElement(node: VNode): HTMLElement {
   return ele;
 }
 
-function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
+function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selected) {
   if (keyboardMapKeys.includes(e.key)) {
     e_preventDefault(e);
     const key = e.key as KeyboardMapKeys;
@@ -254,89 +255,148 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor) {
           doc.posMoveOver = false;
           newPos = pos.replace({ ch: doc.getLine(pos.line).text.length - 1, sticky: 'after' });
           break;
-        case 'Backspace':
-          if (doc.posMoveOver) {
-            doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
-            doc.posMoveOver = false;
-          }
-          const currentPosBackSpace = doc.pos!;
-          const chIdxBackSpace = judgeChBySticky(currentPosBackSpace.ch, currentPosBackSpace.sticky);
-          if (chIdxBackSpace === 0) {
-            if (currentPosBackSpace.line === 0) {
-              return;
-            } else {
-              doc.updatePos(
-                new Pos({
-                  line: currentPosBackSpace.line - 1,
-                  ch: doc.getLineLength(currentPosBackSpace.line - 1) - 1,
-                  sticky: 'after'
-                })
-              );
-            }
+        case 'Backspace': {
+          if (doc.sel?.isValid()) {
+            const { from, to } = doc.sel.sort();
+            doc.updateDoc(
+              new Change({
+                from,
+                to,
+                origin: '-delete',
+                text: []
+              })
+            );
+            selected.hidden();
+            doc.updatePos(from);
+            doc.updateSelection(new Selection(from));
           } else {
-            doc.updatePos(currentPosBackSpace!.replace({ ch: currentPosBackSpace!.ch - 1 }));
+            if (doc.posMoveOver) {
+              doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
+              doc.posMoveOver = false;
+            }
+            const currentPosBackSpace = doc.pos!;
+            const chIdxBackSpace = judgeChBySticky(currentPosBackSpace.ch, currentPosBackSpace.sticky);
+            if (chIdxBackSpace === 0) {
+              if (currentPosBackSpace.line === 0) {
+                return;
+              } else {
+                doc.updatePos(
+                  new Pos({
+                    line: currentPosBackSpace.line - 1,
+                    ch: doc.getLineLength(currentPosBackSpace.line - 1) - 1,
+                    sticky: 'after'
+                  })
+                );
+              }
+            } else {
+              doc.updatePos(currentPosBackSpace!.replace({ ch: currentPosBackSpace!.ch - 1 }));
+            }
+            doc.updateDoc(
+              new Change({
+                from: currentPosBackSpace!,
+                to: currentPosBackSpace!,
+                origin: '-delete',
+                text: []
+              })
+            );
           }
-          doc.updateDoc(
-            new Change({
-              from: currentPosBackSpace!,
-              to: currentPosBackSpace!,
-              origin: '-delete',
-              text: []
-            })
-          );
           return;
-        case 'Delete':
-          if (doc.posMoveOver) {
-            doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
-            doc.posMoveOver = false;
+        }
+        case 'Delete': {
+          if (doc.sel?.isValid()) {
+            const { from, to } = doc.sel.sort();
+            doc.updateDoc(
+              new Change({
+                from,
+                to,
+                origin: 'delete-',
+                text: []
+              })
+            );
+            selected.hidden();
+            doc.updatePos(from);
+            doc.updateSelection(new Selection(from));
+          } else {
+            if (doc.posMoveOver) {
+              doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
+              doc.posMoveOver = false;
+            }
+            doc.updateDoc(
+              new Change({
+                from: doc.pos!,
+                to: doc.pos!,
+                origin: 'delete-',
+                text: []
+              })
+            );
           }
-          doc.updateDoc(
-            new Change({
-              from: doc.pos!,
-              to: doc.pos!,
-              origin: 'delete-',
-              text: []
-            })
-          );
           return;
-        case 'Enter':
-          if (doc.posMoveOver) {
-            doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
-            doc.posMoveOver = false;
+        }
+        case 'Enter': {
+          if (doc.sel?.isValid()) {
+            const { from, to } = doc.sel.sort();
+            doc.updateDoc(
+              new Change({
+                from,
+                to,
+                origin: 'enter',
+                text: []
+              })
+            );
+            selected.hidden();
+            doc.updatePos(
+              new Pos({
+                line: from.line + 1,
+                ch: 0,
+                sticky: 'before'
+              })
+            );
+            doc.updateSelection(new Selection(from));
+          } else {
+            if (doc.posMoveOver) {
+              doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
+              doc.posMoveOver = false;
+            }
+            const currentPosEnter = doc.pos!;
+            doc.updatePos(
+              new Pos({
+                line: currentPosEnter.line + 1,
+                ch: 0,
+                sticky: 'before'
+              })
+            );
+            doc.updateDoc(
+              new Change({
+                from: currentPosEnter!,
+                to: currentPosEnter!,
+                origin: 'enter',
+                text: []
+              })
+            );
           }
-          const currentPosEnter = doc.pos!;
-          doc.updatePos(
-            new Pos({
-              line: currentPosEnter.line + 1,
-              ch: 0,
-              sticky: 'before'
-            })
-          );
-          doc.updateDoc(
-            new Change({
-              from: currentPosEnter!,
-              to: currentPosEnter!,
-              origin: 'enter',
-              text: []
-            })
-          );
           return;
-        case 'Tab':
-          if (doc.posMoveOver) {
-            doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
-            doc.posMoveOver = false;
+        }
+        case 'Tab': {
+          if (doc.sel?.isValid()) {
+            // TODO
+          } else {
+            if (doc.posMoveOver) {
+              doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
+              doc.posMoveOver = false;
+            }
+            const currentPosTab = doc.pos!;
+            doc.updatePos(currentPosTab!.replace({ ch: currentPosTab!.ch + 2 }));
+            doc.updateDoc(
+              new Change({
+                from: currentPosTab!,
+                to: currentPosTab!,
+                origin: 'input',
+                text: ['  ']
+              })
+            );
           }
-          const currentPosTab = doc.pos!;
-          doc.updatePos(currentPosTab!.replace({ ch: currentPosTab!.ch + 2 }));
-          doc.updateDoc(
-            new Change({
-              from: currentPosTab!,
-              to: currentPosTab!,
-              origin: 'input',
-              text: ['  ']
-            })
-          );
           return;
+        }
       }
       // 移动光标 处理
       surmiseInfoFromPos(newPos!, doc);

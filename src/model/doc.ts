@@ -219,6 +219,21 @@ export class Doc implements VNode {
         }
         this.effect.push(this.children[i]);
       }
+    } else if (origin === 'enter') {
+      const fromLineText = this.getLineText(fromLineN);
+      const toLineText = this.getLineText(toLineN);
+
+      this.children[fromLineN].updateLine({ tag: 'replace', text: fromLineText.substring(0, fromCh) });
+      this.children[fromLineN].effectTag = 'update';
+      this.effect.push(this.children[fromLineN]);
+      const newLine = this.createLine(toLineText.substring(toCh));
+      newLine.effectTag = 'add';
+      this.pushLine(newLine, toLineN + 1);
+      this.effect.push(newLine);
+      for (let i = fromLineN + 1; i <= toLineN; i++) {
+        this.children[i].effectTag = 'delete';
+        this.effect.push(this.children[i]);
+      }
     }
   }
 

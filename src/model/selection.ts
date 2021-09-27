@@ -13,6 +13,14 @@ export class Selection {
     this.endPos = pos;
   }
 
+  /**
+   * 选区是有效
+   * @returns boolean
+   */
+  isValid() {
+    return this.startPos.cmp(this.endPos) !== 0;
+  }
+
   sort() {
     const { startPos, endPos } = this;
     let from: Pos;
@@ -21,7 +29,7 @@ export class Selection {
     if (startPos.cmp(endPos) < 0) {
       from = startPos;
       to = endPos;
-    } else if (startPos.cmp(endPos) === 0) {
+    } else if (!this.isValid()) {
       from = startPos;
       to = endPos;
       equal = true;
