@@ -197,11 +197,11 @@ function surmisePosChInfo(lineText: PosMapLine, x: number, docX: number, overLin
     }
     const leftRect = range(textNode, start, mid).getClientRects()[0];
     const rightRect = range(textNode, mid, end).getClientRects()[0];
-    if (leftRect.left - docX < x && leftRect.right - docX > x) {
+    if (leftRect.left - docX <= x && leftRect.right - docX >= x) {
       return searchCh(start, mid);
-    } else if (rightRect.left - docX < x && rightRect.right - docX > x) {
+    } else if (rightRect.left - docX <= x && rightRect.right - docX >= x) {
       return searchCh(mid, end);
-    } else if (rightRect.right - docX < x) {
+    } else if (rightRect.right - docX <= x) {
       // 点击到尾部空白处
       chX = rightRect.right;
       return end - 1;

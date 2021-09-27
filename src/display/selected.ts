@@ -1,6 +1,9 @@
 import { classPrefix, lineHeight } from '../shared/constants';
 import { Selection } from '../model/selection';
 
+const focusClass = `${classPrefix}_selected_item ${classPrefix}_selected_item_focus`;
+const unFocusClass = `${classPrefix}_selected_item`;
+
 export class Selected {
   ele: HTMLDivElement;
   private selectedItem = new Map<number, HTMLDivElement>();
@@ -15,13 +18,13 @@ export class Selected {
     const left = options?.start || 0;
     if (div) {
       div.style.left = `${left}px`;
-      div.style.width = options?.end ? `${options.end}px` : `${width - left}px`;
+      div.style.width = options?.end ? `${options.end - left}px` : `${width - left}px`;
     } else {
       const item = document.createElement('div');
-      item.setAttribute('class', `${classPrefix}_selected_item ${classPrefix}_selected_item_focus`);
+      item.setAttribute('class', focusClass);
       item.style.top = `${lineN * lineHeight}px`;
       item.style.left = `${left}px`;
-      item.style.width = options?.end ? `${options.end}px` : `${width - left}px`;
+      item.style.width = options?.end ? `${options.end - left}px` : `${width - left}px`;
       this.selectedItem.set(lineN, item);
       this.ele.append(item);
     }
@@ -39,24 +42,29 @@ export class Selected {
 
   focus() {
     for (const [key, value] of this.selectedItem) {
-      value.setAttribute('class', `${classPrefix}_selected_item ${classPrefix}_selected_item_focus`);
+      value.setAttribute('class', focusClass);
     }
   }
 
   blur() {
     for (const [key, value] of this.selectedItem) {
-      value.setAttribute('class', `${classPrefix}_selected_item`);
+      value.setAttribute('class', unFocusClass);
     }
   }
 
   update(sel: Selection, width: number) {
     const { startPos, endPos } = sel;
+    this.hidden();
     if (endPos.cmp(startPos) > 0) {
-      this.updateSelectedItem(startPos.line, width, { start: startPos.position.x });
-      for (let i = startPos.line + 1; i < endPos.line; i++) {
-        this.updateSelectedItem(i, width);
+      if (startPos.line !== endPos.line) {
+        this.updateSelectedItem(startPos.line, width, { start: startPos.position.x });
+        for (let i = startPos.line + 1; i < endPos.line; i++) {
+          this.updateSelectedItem(i, width);
+        }
+        this.updateSelectedItem(endPos.line, width, { end: endPos.position.x });
+      } else {
+        this.updateSelectedItem(startPos.line, width, { start: startPos.position.x, end: endPos.position.x });
       }
-      this.updateSelectedItem(endPos.line, width, { end: endPos.position.x });
     }
   }
 }

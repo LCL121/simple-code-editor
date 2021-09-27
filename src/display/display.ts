@@ -97,9 +97,11 @@ export class Display {
     });
     input.ele.addEventListener('blur', () => {
       cursor.hidden();
+      selected.blur();
     });
     input.ele.addEventListener('focus', () => {
       cursor.show();
+      selected.focus();
     });
     input.ele.addEventListener('input', (event) => {
       const e = event as InputEvent;
