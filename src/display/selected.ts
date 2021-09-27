@@ -1,5 +1,6 @@
 import { classPrefix, lineHeight } from '../shared/constants';
 import { Selection } from '../model/selection';
+import { Pos } from '../model/pos';
 
 const focusClass = `${classPrefix}_selected_item ${classPrefix}_selected_item_focus`;
 const unFocusClass = `${classPrefix}_selected_item`;
@@ -11,6 +12,18 @@ export class Selected {
     const selected = document.createElement('div');
     selected.setAttribute('class', `${classPrefix}_selected`);
     this.ele = selected;
+  }
+
+  private updateSelected(startPos: Pos, endPos: Pos, width: number) {
+    if (startPos.line !== endPos.line) {
+      this.updateSelectedItem(startPos.line, width, { start: startPos.position.x });
+      for (let i = startPos.line + 1; i < endPos.line; i++) {
+        this.updateSelectedItem(i, width);
+      }
+      this.updateSelectedItem(endPos.line, width, { end: endPos.position.x });
+    } else {
+      this.updateSelectedItem(startPos.line, width, { start: startPos.position.x, end: endPos.position.x });
+    }
   }
 
   private updateSelectedItem(lineN: number, width: number, options?: { start?: number; end?: number }) {
@@ -56,15 +69,9 @@ export class Selected {
     const { startPos, endPos } = sel;
     this.hidden();
     if (endPos.cmp(startPos) > 0) {
-      if (startPos.line !== endPos.line) {
-        this.updateSelectedItem(startPos.line, width, { start: startPos.position.x });
-        for (let i = startPos.line + 1; i < endPos.line; i++) {
-          this.updateSelectedItem(i, width);
-        }
-        this.updateSelectedItem(endPos.line, width, { end: endPos.position.x });
-      } else {
-        this.updateSelectedItem(startPos.line, width, { start: startPos.position.x, end: endPos.position.x });
-      }
+      this.updateSelected(startPos, endPos, width);
+    } else if (endPos.cmp(startPos) < 0) {
+      this.updateSelected(endPos, startPos, width);
     }
   }
 }

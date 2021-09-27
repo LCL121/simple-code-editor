@@ -57,8 +57,12 @@ export class Pos {
     this.position = position;
   }
 
+  getPosChBySticky() {
+    return judgeChBySticky(this.ch, this.sticky);
+  }
+
   static cmp(a: Pos, b: Pos) {
-    return a.line - b.line || a.ch - b.ch;
+    return a.line - b.line || a.getPosChBySticky() - b.getPosChBySticky();
   }
 
   static equalCursorPos(a: Pos, b: Pos) {
