@@ -8,8 +8,17 @@ import { Selected } from './selected';
 import { PosSticky, VNode } from '../shared/type';
 import { posFromMouse, surmiseInfoFromPos, judgeChBySticky, Pos } from '../model/pos';
 import { Selection } from '../model/selection';
-import { createElement, createTextElement, isString, e_preventDefault, activeElt, makeArray } from '../shared/utils';
-import { KeyboardMapKeys, keyboardMapKeys, keyboardMap, inputTypes, InputTypes, docLeftGap } from '../shared/constants';
+import {
+  createElement,
+  createTextElement,
+  isString,
+  e_preventDefault,
+  activeElt,
+  makeArray,
+  setClipboardContents,
+  getClipboardContents
+} from '../shared/utils';
+import { KeyboardMapKeys, keyboardMapKeys, InputTypes } from '../shared/constants';
 
 export class Display {
   static init(editor: SimpleCodeEditor, container: HTMLElement) {
@@ -128,10 +137,13 @@ export class Display {
       keydownFn(e, doc, cursor);
     });
     input.ele.addEventListener('copy', (e) => {
-      console.log(e);
+      e_preventDefault(e);
+      setClipboardContents(doc.getSelectedCode());
     });
-    input.ele.addEventListener('paste', (e) => {
-      console.log(e);
+    input.ele.addEventListener('paste', async (e) => {
+      e_preventDefault(e);
+      const text = await getClipboardContents();
+      console.log(text);
     });
   }
 }

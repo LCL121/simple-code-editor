@@ -12,11 +12,17 @@ html, body, p, pre, div, span {
   display: flex;
   margin: 5px;
   font-family: monospace;
+  overflow: auto;
 
   &_textarea {
     position: absolute;
-    top: 100%;
+    z-index: -1;
     left: 0;
+    opacity: 0;
+    width: 0px;
+    height: 0px;
+    padding: 0px;
+    border: none;
   }
 
   &_selected {

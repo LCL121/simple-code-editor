@@ -4,3 +4,4 @@ export * from './element';
 export * from './range';
 export * from './array';
 export * from './math';
+export * from './clipboard';

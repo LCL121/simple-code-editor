@@ -49,7 +49,7 @@ export class Doc implements VNode {
       const lines = this.children;
       const result: string[] = [];
       result.push(this.getLineText(startPos.line).substring(startPos.getPosChBySticky()));
-      for (let i = startPos.line; i < endPos.line; i++) {
+      for (let i = startPos.line + 1; i < endPos.line; i++) {
         result.push(lines[i].text);
       }
       result.push(this.getLineText(endPos.line).substring(0, endPos.getPosChBySticky()));
