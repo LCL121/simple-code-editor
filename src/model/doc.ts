@@ -42,21 +42,6 @@ export class Doc implements VNode {
     return new Line(lineText, this);
   }
 
-  private _getSelectedCode(startPos: Pos, endPos: Pos): string {
-    if (startPos.cmpLine(endPos) === 0) {
-      return this.getLineText(startPos.line).substring(startPos.getPosChBySticky(), endPos.getPosChBySticky());
-    } else {
-      const lines = this.children;
-      const result: string[] = [];
-      result.push(this.getLineText(startPos.line).substring(startPos.getPosChBySticky()));
-      for (let i = startPos.line + 1; i < endPos.line; i++) {
-        result.push(lines[i].text);
-      }
-      result.push(this.getLineText(endPos.line).substring(0, endPos.getPosChBySticky()));
-      return result.join('\n');
-    }
-  }
-
   getCode(): string {
     const lines = this.children;
     const result: string[] = [];
@@ -69,11 +54,20 @@ export class Doc implements VNode {
   getSelectedCode(): string {
     const sel = this.sel;
     if (sel) {
-      const { startPos, endPos } = sel;
-      if (endPos.cmp(startPos) > 0) {
-        return this._getSelectedCode(startPos, endPos);
-      } else if (endPos.cmp(startPos) < 0) {
-        return this._getSelectedCode(endPos, startPos);
+      const { from, to, equal } = sel.sort();
+      if (!equal) {
+        if (from.cmpLine(to) === 0) {
+          return this.getLineText(from.line).substring(from.getPosChBySticky(), to.getPosChBySticky());
+        } else {
+          const lines = this.children;
+          const result: string[] = [];
+          result.push(this.getLineText(from.line).substring(from.getPosChBySticky()));
+          for (let i = from.line + 1; i < to.line; i++) {
+            result.push(lines[i].text);
+          }
+          result.push(this.getLineText(to.line).substring(0, to.getPosChBySticky()));
+          return result.join('\n');
+        }
       }
     }
     return '';
@@ -143,12 +137,10 @@ export class Doc implements VNode {
     }
   }
 
-  updateDoc(change: Change) {
-    console.log(change);
+  private updateDocEqualPos(change: Change) {
     const { from, to } = change;
     const fromCh = judgeChBySticky(from.ch, from.sticky);
     const fromLineN = from.line;
-    const toCh = judgeChBySticky(to.ch, to.sticky);
     const toLineN = to.line;
     this.clearPosMap(fromLineN, toLineN);
     if (change.origin === 'input') {
@@ -203,6 +195,39 @@ export class Doc implements VNode {
         }
       }
       this.effect.push(this.children[fromLineN]);
+    }
+  }
+
+  private updateDocUnequalPos(change: Change) {
+    const { from, to, origin } = change;
+    const fromCh = judgeChBySticky(from.ch, from.sticky);
+    const fromLineN = from.line;
+    const toCh = judgeChBySticky(to.ch, to.sticky);
+    const toLineN = to.line;
+    this.clearPosMap(fromLineN, toLineN);
+    if (origin === 'cut' || origin === '-delete' || origin === 'delete-') {
+      const fromLineText = this.getLineText(fromLineN);
+      const toLineText = this.getLineText(toLineN);
+      this.children[fromLineN].updateLine({
+        tag: 'replace',
+        text: `${fromLineText.substring(0, fromCh)}${toLineText.substring(toCh)}`
+      });
+      this.children[fromLineN].effectTag = 'update';
+      for (let i = fromLineN; i <= toLineN; i++) {
+        if (i !== fromLineN) {
+          this.children[i].effectTag = 'delete';
+        }
+        this.effect.push(this.children[i]);
+      }
+    }
+  }
+
+  updateDoc(change: Change) {
+    console.log(change);
+    if (change.from.equalCursorPos(change.to)) {
+      this.updateDocEqualPos(change);
+    } else {
+      this.updateDocUnequalPos(change);
     }
   }
 

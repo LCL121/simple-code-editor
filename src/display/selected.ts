@@ -66,12 +66,10 @@ export class Selected {
   }
 
   update(sel: Selection, width: number) {
-    const { startPos, endPos } = sel;
+    const { from, to, equal } = sel.sort();
     this.hidden();
-    if (endPos.cmp(startPos) > 0) {
-      this.updateSelected(startPos, endPos, width);
-    } else if (endPos.cmp(startPos) < 0) {
-      this.updateSelected(endPos, startPos, width);
+    if (!equal) {
+      this.updateSelected(from, to, width);
     }
   }
 }

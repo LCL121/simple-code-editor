@@ -145,6 +145,24 @@ export class Display {
       const text = await getClipboardContents();
       console.log(text);
     });
+    input.ele.addEventListener('cut', (e) => {
+      e_preventDefault(e);
+      if (doc.sel) {
+        const text = doc.getSelectedCode();
+        setClipboardContents(text);
+        const { from, to } = doc.sel.sort();
+        doc.updateDoc(
+          new Change({
+            from,
+            to,
+            origin: 'cut',
+            text: [text]
+          })
+        );
+        selected.hidden();
+        doc.updatePos(from);
+      }
+    });
   }
 }
 

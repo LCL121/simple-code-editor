@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>event 顺序</title>
+</head>
+<body>
+  <input type="text" id="input">
+  <script>
+    const input = document.getElementById('input');
+    input.addEventListener('change', () => { console.log('change') });
+    input.addEventListener('cut', () => { console.log('cut') });
+    input.addEventListener('copy', () => { console.log('copy') });
+    input.addEventListener('keydown', () => { console.log('keydown') });
+    input.addEventListener('keyup', () => { console.log('keyup') });
+    input.addEventListener('input', () => { console.log('input') });
+  </script>
+</body>
+</html>
