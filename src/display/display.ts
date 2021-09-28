@@ -23,8 +23,6 @@ import { KeyboardMapKeys, keyboardMapKeys, InputTypes } from '../shared/constant
 
 interface EmitterEvents {
   update: any;
-  [key: string]: any;
-  [key: symbol]: any;
 }
 
 const emitterInstance = emitter<EmitterEvents>();
