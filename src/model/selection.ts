@@ -1,4 +1,5 @@
-import { Pos } from './pos';
+import { Doc } from './doc';
+import { Pos, surmiseInfoFromPos } from './pos';
 
 export class Selection {
   startPos: Pos;
@@ -42,5 +43,10 @@ export class Selection {
       to,
       equal
     };
+  }
+
+  surmisePosInfo(doc: Doc) {
+    surmiseInfoFromPos(this.startPos, doc);
+    surmiseInfoFromPos(this.endPos, doc);
   }
 }

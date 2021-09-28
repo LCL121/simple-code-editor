@@ -68,6 +68,10 @@ export class Pos {
     return judgeChBySticky(this.ch, this.sticky);
   }
 
+  surmiseInfo(doc: Doc) {
+    surmiseInfoFromPos(this, doc);
+  }
+
   static cmp(a: Pos, b: Pos) {
     return a.line - b.line || a.getPosChBySticky() - b.getPosChBySticky();
   }

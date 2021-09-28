@@ -6,7 +6,7 @@ import { Cursor } from './cursor';
 import { Gutters } from './gutters';
 import { Selected } from './selected';
 import { PosSticky, VNode } from '../shared/type';
-import { posFromMouse, surmiseInfoFromPos, judgeChBySticky, Pos } from '../model/pos';
+import { posFromMouse, Pos } from '../model/pos';
 import { Selection } from '../model/selection';
 import {
   createElement,
@@ -64,7 +64,9 @@ export class Display {
       }
     }
     if (update) {
-      surmiseInfoFromPos(doc.pos!, doc);
+      doc.pos?.surmiseInfo(doc);
+      doc.sel?.surmisePosInfo(doc);
+      doc.sel && selected.update(doc.sel, doc.getDocRect()?.width!);
       cursor.updatePosition(doc.pos!.position.x, doc.pos!.position.y);
     }
     requestAnimationFrame(() => {
@@ -199,7 +201,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
           break;
         case 'ArrowLeft':
           doc.posMoveOver = false;
-          const chIdxLeft = judgeChBySticky(pos.ch, pos.sticky);
+          const chIdxLeft = pos.getPosChBySticky();
           let newChLeft: number;
           let newLineLeft: number;
           let newStickyLeft: PosSticky;
@@ -224,7 +226,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
           break;
         case 'ArrowRight':
           doc.posMoveOver = false;
-          const chIdxRight = judgeChBySticky(pos.ch, pos.sticky);
+          const chIdxRight = pos.getPosChBySticky();
           let newChRight: number;
           let newLineRight: number;
           let newStickyRight: PosSticky;
@@ -275,7 +277,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
               doc.posMoveOver = false;
             }
             const currentPosBackSpace = doc.pos!;
-            const chIdxBackSpace = judgeChBySticky(currentPosBackSpace.ch, currentPosBackSpace.sticky);
+            const chIdxBackSpace = currentPosBackSpace.getPosChBySticky();
             if (chIdxBackSpace === 0) {
               if (currentPosBackSpace.line === 0) {
                 return;
@@ -387,7 +389,6 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
                 text: []
               })
             );
-            // TODO
             const { startPos, endPos } = doc.sel;
             const newStartPos = startPos.replace({ ch: startPos.ch + 2 });
             const newEndPos = endPos.replace({ ch: endPos.ch + 2 });
@@ -414,8 +415,11 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
           return;
         }
       }
-      // 移动光标 处理
-      surmiseInfoFromPos(newPos!, doc);
+      /*
+       * 移动光标 处理
+       * 其他effect 在Display.update 处理
+       */
+      newPos.surmiseInfo(doc);
       doc.updatePos(newPos!);
       cursor.updatePosition(newPos!.position.x, newPos!.position.y);
     }
