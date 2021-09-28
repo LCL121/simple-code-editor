@@ -16,9 +16,22 @@ import {
   activeElt,
   makeArray,
   setClipboardContents,
-  getClipboardContents
+  getClipboardContents,
+  emitter
 } from '../shared/utils';
 import { KeyboardMapKeys, keyboardMapKeys, InputTypes } from '../shared/constants';
+
+interface EmitterEvents {
+  update: any;
+  [key: string]: any;
+  [key: symbol]: any;
+}
+
+const emitterInstance = emitter<EmitterEvents>();
+
+export function emitterEmitUpdate() {
+  emitterInstance.emit('update');
+}
 
 export class Display {
   static init(editor: SimpleCodeEditor, container: HTMLElement) {
@@ -32,7 +45,7 @@ export class Display {
 
       Display.addEventListener(doc, input, cursor, selected);
 
-      requestAnimationFrame(() => {
+      emitterInstance.on('update', () => {
         Display.update(doc, cursor, gutters, selected);
       });
     } else {
@@ -71,9 +84,6 @@ export class Display {
         selected.update(doc.sel, doc.getDocRect()?.width!);
       }
     }
-    requestAnimationFrame(() => {
-      Display.update(doc, cursor, gutters, selected);
-    });
   }
 
   private static addEventListener(doc: Doc, input: Input, cursor: Cursor, selected: Selected) {
@@ -98,6 +108,7 @@ export class Display {
           doc.sel?.updateEndPos(pos);
           doc.updatePos(pos);
           cursor.updatePosition(pos.position.x, pos.position.y);
+          emitterEmitUpdate();
         }
       });
     });
@@ -107,6 +118,7 @@ export class Display {
       doc.sel?.updateEndPos(pos);
       doc.updatePos(pos);
       cursor.updatePosition(pos.position.x, pos.position.y);
+      emitterEmitUpdate();
     });
     input.ele.addEventListener('blur', () => {
       cursor.hidden();

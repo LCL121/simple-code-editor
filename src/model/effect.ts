@@ -1,5 +1,8 @@
+import { emitterEmitUpdate } from '../display/display';
+
 export class Effect<T> {
   private queue: T[] = [];
+  private timer: number | null = null;
 
   push(i: T) {
     const idx = this.queue.indexOf(i);
@@ -7,6 +10,13 @@ export class Effect<T> {
       this.queue.splice(idx, 1);
     }
     this.queue.push(i);
+
+    if (this.timer === null && this.queue.length > 0) {
+      this.timer = requestAnimationFrame(() => {
+        emitterEmitUpdate();
+        this.timer = null;
+      });
+    }
   }
 
   shift() {
