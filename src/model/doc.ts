@@ -5,6 +5,7 @@ import { Change } from './change';
 import { Selection } from './selection';
 import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
+import { splitTextByEnter } from '../shared/utils';
 
 export class Doc implements VNode {
   parent: ParentVNode;
@@ -22,7 +23,7 @@ export class Doc implements VNode {
   pos?: Pos;
   sel?: Selection;
   constructor(text: string) {
-    this.children = this.createLines(text.split(/\r\n?|\n/));
+    this.children = this.createLines(splitTextByEnter(text));
     this.init = true;
   }
 
@@ -111,11 +112,11 @@ export class Doc implements VNode {
     return this.children[this.getMaxLineN()];
   }
 
-  pushLine(target: Line, lineN?: number) {
-    if (lineN) {
-      target.nextSibling = this.getLine(lineN);
-      this.getLine(lineN - 1).nextSibling = target;
-      this.children.splice(lineN, 0, target);
+  pushLine(target: Line, nextSiblingLineN?: number) {
+    if (nextSiblingLineN) {
+      target.nextSibling = this.getLine(nextSiblingLineN);
+      this.getLine(nextSiblingLineN - 1).nextSibling = target;
+      this.children.splice(nextSiblingLineN, 0, target);
     } else {
       this.getLastLine().nextSibling = target;
       this.children.push(target);
@@ -138,13 +139,13 @@ export class Doc implements VNode {
   }
 
   private updateDocEqualPos(change: Change) {
-    const { from, to, origin } = change;
+    const { from, to, origin, text } = change;
     const fromCh = judgeChBySticky(from.ch, from.sticky);
     const fromLineN = from.line;
     const toLineN = to.line;
     this.clearPosMap(fromLineN, toLineN);
     if (origin === 'input') {
-      this.children[fromLineN].updateLine({ text: change.text[0], tag: 'add', ch: fromCh });
+      this.children[fromLineN].updateLine({ text: text[0], tag: 'add', ch: fromCh });
       this.children[fromLineN].effectTag = 'update';
       this.effect.push(this.children[fromLineN]);
     } else if (origin === 'enter') {
@@ -199,11 +200,28 @@ export class Doc implements VNode {
       this.children[fromLineN].updateLine({ text: '  ', tag: 'add', ch: fromCh });
       this.children[fromLineN].effectTag = 'update';
       this.effect.push(this.children[fromLineN]);
+    } else if (origin === 'paste') {
+      const textLen = text.length;
+      const fromLineText = this.getLineText(fromLineN);
+      this.children[fromLineN].updateLine({ text: text[0], tag: 'add', ch: fromCh });
+      this.children[fromLineN].effectTag = 'update';
+      this.effect.push(this.children[fromLineN]);
+      for (let i = textLen - 1; i > 0; i--) {
+        let newLine: Line;
+        if (i === textLen - 1) {
+          newLine = this.createLine(`${text[i]}${fromLineText.substring(fromCh)}`);
+        } else {
+          newLine = this.createLine(text[i]);
+        }
+        newLine.effectTag = 'add';
+        this.pushLine(newLine, fromLineN + 1);
+        this.effect.push(newLine);
+      }
     }
   }
 
   private updateDocUnequalPos(change: Change) {
-    const { from, to, origin } = change;
+    const { from, to, origin, text } = change;
     const fromCh = judgeChBySticky(from.ch, from.sticky);
     const fromLineN = from.line;
     const toCh = judgeChBySticky(to.ch, to.sticky);
@@ -242,6 +260,51 @@ export class Doc implements VNode {
         this.children[i].updateLine({ tag: 'add', text: '  ', ch: 0 });
         this.children[i].effectTag = 'update';
         this.effect.push(this.children[i]);
+      }
+    } else if (origin === 'paste') {
+      /**
+       * textLen === to - from => update
+       * textLen < to - from => update delete
+       * textLen > to - from => update add
+       */
+      const changeLine = toLineN - fromLineN + 1;
+      const textLen = text.length;
+      const fromLineText = this.getLineText(fromLineN);
+      const toLineText = this.getLineText(toLineN);
+      const minLen = Math.min(changeLine, textLen);
+
+      for (let i = 0; i < minLen; i++) {
+        const curText = text[i];
+        const curLineN = i + fromLineN;
+        if (curLineN === fromLineN) {
+          this.children[curLineN].updateLine({
+            tag: 'replace',
+            text: `${fromLineText.substring(0, fromCh)}${curText}`
+          });
+        } else if (curLineN === minLen - 1 + fromLineN) {
+          this.children[curLineN].updateLine({
+            tag: 'replace',
+            text: `${curText}${toLineText.substring(toCh)}`
+          });
+        } else {
+          this.children[curLineN].updateLine({ tag: 'replace', text: curText });
+        }
+        this.children[curLineN].effectTag = 'update';
+        this.effect.push(this.children[curLineN]);
+      }
+
+      if (textLen <= changeLine) {
+        for (let i = minLen + fromLineN; i <= toLineN; i++) {
+          this.children[i].effectTag = 'delete';
+          this.effect.push(this.children[i]);
+        }
+      } else if (textLen > changeLine) {
+        for (let i = textLen - 1; i >= minLen; i--) {
+          const newLine = this.createLine(text[i]);
+          newLine.effectTag = 'add';
+          this.pushLine(newLine, minLen);
+          this.effect.push(newLine);
+        }
       }
     }
   }

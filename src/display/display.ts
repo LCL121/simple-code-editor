@@ -17,7 +17,8 @@ import {
   makeArray,
   setClipboardContents,
   getClipboardContents,
-  emitter
+  emitter,
+  splitTextByEnter
 } from '../shared/utils';
 import { KeyboardMapKeys, keyboardMapKeys, InputTypes } from '../shared/constants';
 
@@ -157,7 +158,38 @@ export class Display {
     input.ele.addEventListener('paste', async (e) => {
       e_preventDefault(e);
       const text = await getClipboardContents();
-      console.log(text);
+      if (text && doc.sel) {
+        const { from, to, equal } = doc.sel.sort();
+        const texts = splitTextByEnter(text);
+        if (equal && texts.length === 1) {
+          doc.updatePos(from.replace({ ch: from.ch + texts[0].length }));
+          doc.updateDoc(
+            new Change({
+              from,
+              to,
+              origin: 'input',
+              text: makeArray<string>(texts)
+            })
+          );
+        } else {
+          if (!equal) {
+            selected.hidden();
+          }
+          doc.updateDoc({
+            from,
+            to,
+            origin: 'paste',
+            text: makeArray<string>(texts)
+          });
+          const newPos = new Pos({
+            line: from.line + texts.length - 1,
+            ch: texts[texts.length - 1].length,
+            sticky: 'before'
+          });
+          doc.updatePos(newPos);
+          doc.updateSelection(new Selection(newPos));
+        }
+      }
     });
     input.ele.addEventListener('cut', (e) => {
       e_preventDefault(e);
