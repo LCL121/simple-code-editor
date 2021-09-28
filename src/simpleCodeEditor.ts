@@ -5,7 +5,6 @@ import { Cursor } from './display/cursor';
 import { Gutters } from './display/gutters';
 import { Wrapper } from './display/wrapper';
 import { Selected } from './display/selected';
-import './styles/index.less';
 
 interface SimpleCodeEditorOptions {
   value: string;
