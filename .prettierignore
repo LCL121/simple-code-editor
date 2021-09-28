@@ -1,0 +1,10 @@
+build/
+dist/
+.vscode/
+
+**/*.md
+**/*.svg
+**/*.ejs
+**/*.html
+
+package.json
