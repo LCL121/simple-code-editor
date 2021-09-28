@@ -159,7 +159,12 @@ export class Display {
       e_preventDefault(e);
       const text = await getClipboardContents();
       if (text && doc.sel) {
-        const { from, to, equal } = doc.sel.sort();
+        const { equal } = doc.sel.sort();
+        /**
+         * 解决enter 等改变pos，但不会改变selection 的操作，使sel 与pos 位置对应
+         */
+        doc.updateSelection(new Selection(doc.pos!));
+        const { from, to } = doc.sel.sort();
         const texts = splitTextByEnter(text);
         if (equal && texts.length === 1) {
           doc.updatePos(from.replace({ ch: from.ch + texts[0].length }));
@@ -464,7 +469,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
        * 其他effect 在Display.update 处理
        */
       newPos.surmiseInfo(doc);
-      doc.updatePos(newPos!);
+      doc.updatePos(newPos);
       cursor.updatePosition(newPos!.position.x, newPos!.position.y);
     }
   }
