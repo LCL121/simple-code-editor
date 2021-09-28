@@ -8,7 +8,8 @@
     "build": "yarn dist",
     "dev": "node ./scripts/dev.js",
     "lint": "eslint --fix \"./src/**/*.{ts,js}\"",
-    "live": "live-server --port=8999"
+    "live": "live-server --port=8999",
+    "prepare": "husky install"
   },
   "keywords": [],
   "author": "",
@@ -39,6 +40,7 @@
     "gulp-minify-css": "^1.2.4",
     "husky": "^7.0.2",
     "less": "^4.1.1",
+    "lint-staged": "^11.1.2",
     "live-server": "^1.2.1",
     "minimist": "^1.2.5",
     "prettier": "^2.3.2",
@@ -54,5 +56,19 @@
   },
   "dependencies": {
     "tslib": "^2.3.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "lint-staged": {
+    "./src/**/*.ts": [
+      "eslint --fix"
+    ],
+    "./src/**/*.less": [
+      "stylelint --fix --syntax less"
+    ]
   }
 }
