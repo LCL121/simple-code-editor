@@ -22,6 +22,11 @@ export class Doc implements VNode {
   posMoveOver = false;
   pos?: Pos;
   sel?: Selection;
+  /**
+   * 标志是否使用输入法编辑器，
+   * 并且记录首个位置便于end 时，计算位置
+   */
+  compositionStartPos?: Pos;
   constructor(text: string) {
     this.children = this.createLines(splitTextByEnter(text));
     this.init = true;

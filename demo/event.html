@@ -16,6 +16,9 @@
     input.addEventListener('keydown', () => { console.log('keydown') });
     input.addEventListener('keyup', () => { console.log('keyup') });
     input.addEventListener('input', () => { console.log('input') });
+    input.addEventListener('compositionstart', () => { console.log('compositionstart') });
+    input.addEventListener('compositionupdate', () => { console.log('compositionupdate') });
+    input.addEventListener('compositionend', () => { console.log('compositionend') });
   </script>
 </body>
 </html>

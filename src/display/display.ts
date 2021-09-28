@@ -148,6 +148,31 @@ export class Display {
         }
       }
     });
+    input.ele.addEventListener('compositionstart', (e) => {
+      e_preventDefault(e);
+      doc.compositionStartPos = doc.pos;
+      console.log(e);
+    });
+    input.ele.addEventListener('compositionupdate', (e) => {
+      e_preventDefault(e);
+      // if (e.data) {
+      //   doc.updateDoc(
+      //     new Change({
+      //       from: doc.pos!,
+      //       to: doc.pos!,
+      //       origin: 'input',
+      //       text: makeArray<string>(e.data)
+      //     })
+      //   );
+      //   doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch + e.data.length }));
+      // }
+      console.log(e);
+    });
+    input.ele.addEventListener('compositionend', (e) => {
+      e_preventDefault(e);
+      doc.compositionStartPos = undefined;
+      console.log(e);
+    });
     input.ele.addEventListener('keydown', (e: KeyboardEvent) => {
       keydownFn(e, doc, cursor, selected);
     });
