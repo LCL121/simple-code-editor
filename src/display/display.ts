@@ -65,9 +65,11 @@ export class Display {
     }
     if (update) {
       doc.pos?.surmiseInfo(doc);
-      doc.sel?.surmisePosInfo(doc);
-      doc.sel && selected.update(doc.sel, doc.getDocRect()?.width!);
       cursor.updatePosition(doc.pos!.position.x, doc.pos!.position.y);
+      if (doc.sel?.isValid()) {
+        doc.sel.surmisePosInfo(doc);
+        selected.update(doc.sel, doc.getDocRect()?.width!);
+      }
     }
     requestAnimationFrame(() => {
       Display.update(doc, cursor, gutters, selected);
