@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>composition 顺序及次数</title>
+</head>
+<body>
+  <!-- https://github.com/w3c/uievents/issues/202 -->
+  <!-- 
+    中文输入法时：
+    composition update 在chrome/edge 中触发 2次，firefox 中触发 1次，IE 中触发 1次
+    input 在chrome/edge 中触发 2次，firefox 中触发 1次，IE 中触发 1次
+    
+    composition start 后面跟 update
+    composition update 后面跟 input
+    composition end 前面跟 update，firefox 还会在后面跟input 
+   -->
+  <input type="text" id="input">
+  <div id="div"></div>
+  <script>
+    const input = document.getElementById('input');
+    input.addEventListener('input', function (e) { 
+      if (e.isComposing) {
+        return;
+      }
+      console.log('input');
+    });
+    input.addEventListener('change', function () {
+      /**
+       * 只能点击触发
+       * 1. input 元素获得焦点
+       * 2. input 元素的值发生变化
+       * 3. input 元素失去焦点
+      */
+     return
+      console.log('change');
+    });
+    input.addEventListener('compositionstart', function () {
+      console.log('compositionstart');
+    }, false);
+    input.addEventListener('compositionupdate', function (e) {
+      console.log(e);
+      console.log('compositionupdate');
+    }, false);
+    input.addEventListener('compositionend', function () {
+      console.log('compositionend');
+    }, false);
+  
+    // vue v-model 对composition end 的处理
+    const id = document.getElementById('div');
+    id.addEventListener('user', (e) => {
+      console.log(e);
+    })
+    setTimeout(() => {
+      const event = new CustomEvent('user', { detail: {name: 'lcl', age: 20} });
+      id.dispatchEvent(event);
+    }, 1000)
+  </script>
+</body>
+</html>
