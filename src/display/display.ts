@@ -138,41 +138,60 @@ export class Display {
       }
       if (type === 'insertText') {
         if (e.data) {
-          doc.updateDoc(
-            new Change({
-              from: doc.pos!,
-              to: doc.pos!,
-              origin: 'input',
-              text: makeArray<string>(e.data)
-            })
-          );
-          doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch + 1 }));
+          if (doc.sel?.isValid) {
+            // const { from, to } = doc.sel.sort();
+            // doc.updateDoc(
+            //   new Change({
+            //     from,
+            //     to,
+            //     origin: 'paste',
+            //     text: makeArray<string>(e.data)
+            //   })
+            // );
+            // doc.updatePos(from.replace({ ch: from.ch + 1 }));
+          } else {
+            doc.updateDoc(
+              new Change({
+                from: doc.pos!,
+                to: doc.pos!,
+                origin: 'input',
+                text: makeArray<string>(e.data)
+              })
+            );
+            doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch + 1 }));
+          }
         }
       }
     });
     input.ele.addEventListener('compositionstart', (e) => {
       e_preventDefault(e);
       doc.compositionStartPos = doc.pos;
+      doc.compositionText = '';
       console.log(e);
     });
     input.ele.addEventListener('compositionupdate', (e) => {
       e_preventDefault(e);
-      // if (e.data) {
-      //   doc.updateDoc(
-      //     new Change({
-      //       from: doc.pos!,
-      //       to: doc.pos!,
-      //       origin: 'input',
-      //       text: makeArray<string>(e.data)
-      //     })
-      //   );
-      //   doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch + e.data.length }));
+      const text = e.data;
+      // if (text) {
+      //   if (doc.compositionText !== text) {
+      //     doc.updateDoc(
+      //       new Change({
+      //         from: doc.compositionStartPos!,
+      //         to: doc.compositionStartPos!.replace({ ch: doc.compositionStartPos!.ch + doc.compositionText.length }),
+      //         origin: 'paste',
+      //         text: makeArray<string>(text)
+      //       })
+      //     );
+      //     doc.updatePos(doc.pos!.replace({ ch: doc.compositionStartPos!.ch + text.length }));
+      //     doc.compositionText = text;
+      //   }
       // }
       console.log(e);
     });
     input.ele.addEventListener('compositionend', (e) => {
       e_preventDefault(e);
       doc.compositionStartPos = undefined;
+      doc.compositionText = '';
       console.log(e);
     });
     input.ele.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -186,27 +205,9 @@ export class Display {
       e_preventDefault(e);
       const text = await getClipboardContents();
       if (text && doc.sel) {
-        const { equal } = doc.sel.sort();
-        /**
-         * 解决enter 等改变pos，但不会改变selection 的操作，使sel 与pos 位置对应
-         */
-        doc.updateSelection(new Selection(doc.pos!));
-        const { from, to } = doc.sel.sort();
         const texts = splitTextByEnter(text);
-        if (equal && texts.length === 1) {
-          doc.updatePos(from.replace({ ch: from.ch + texts[0].length }));
-          doc.updateDoc(
-            new Change({
-              from,
-              to,
-              origin: 'input',
-              text: makeArray<string>(texts)
-            })
-          );
-        } else {
-          if (!equal) {
-            selected.hidden();
-          }
+        if (doc.sel.isValid()) {
+          const { from, to } = doc.sel.sort();
           doc.updateDoc({
             from,
             to,
@@ -218,8 +219,36 @@ export class Display {
             ch: texts[texts.length - 1].length,
             sticky: 'before'
           });
+          selected.hidden();
           doc.updatePos(newPos);
           doc.updateSelection(new Selection(newPos));
+        } else {
+          const pos = doc.pos!;
+          if (texts.length === 1) {
+            doc.updatePos(pos.replace({ ch: pos.ch + texts[0].length }));
+            doc.updateDoc(
+              new Change({
+                from: pos,
+                to: pos,
+                origin: 'input',
+                text: makeArray<string>(texts)
+              })
+            );
+          } else {
+            doc.updateDoc({
+              from: pos,
+              to: pos,
+              origin: 'paste',
+              text: makeArray<string>(texts)
+            });
+            const newPos = new Pos({
+              line: pos.line + texts.length - 1,
+              ch: texts[texts.length - 1].length,
+              sticky: 'before'
+            });
+            doc.updatePos(newPos);
+            doc.updateSelection(new Selection(newPos));
+          }
         }
       }
     });
@@ -497,7 +526,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
        */
       newPos.surmiseInfo(doc);
       doc.updatePos(newPos);
-      cursor.updatePosition(newPos!.position.x, newPos!.position.y);
+      cursor.updatePosition(newPos!.position.x, newPos.position.y);
     }
   }
 }

@@ -31,6 +31,7 @@ export class Doc implements VNode {
    * 并且记录首个位置便于end 时，计算位置
    */
   compositionStartPos?: Pos;
+  compositionText = '';
   constructor(text: string) {
     this.children = this.createLines(splitTextByEnter(text));
     this.init = true;
@@ -283,6 +284,18 @@ export class Doc implements VNode {
       const changeLine = toLineN - fromLineN + 1;
       const textLen = text.length;
       const fromLineText = this.getLineText(fromLineN);
+
+      // len === 1 特殊处理
+      if (textLen === changeLine && textLen === 1) {
+        this.children[fromLineN].updateLine({
+          tag: 'replace',
+          text: `${fromLineText.substring(0, fromCh)}${text}${fromLineText.substring(fromCh)}`
+        });
+        this.children[fromLineN].effectTag = 'update';
+        this.effect.push(this.children[fromLineN]);
+        return;
+      }
+
       const toLineText = this.getLineText(toLineN);
       const minLen = Math.min(changeLine, textLen);
 
@@ -306,7 +319,7 @@ export class Doc implements VNode {
         this.effect.push(this.children[curLineN]);
       }
 
-      if (textLen <= changeLine) {
+      if (textLen < changeLine) {
         for (let i = minLen + fromLineN; i <= toLineN; i++) {
           this.children[i].effectTag = 'delete';
           this.effect.push(this.children[i]);
