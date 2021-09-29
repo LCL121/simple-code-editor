@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>loop event</title>
+  <style>
+    .color {
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+  <div id="div">click</div>
+  <div id="render"></div>
+
+  <!-- 
+    requestAnimationFrame 也有微任务
+   -->
+  <!-- <script>
+    const div = document.getElementById('div');
+    const render = document.getElementById('render');
+
+    function renderClick() {
+      render.innerText = 'click';
+      console.log('click');
+    }
+
+    function renderSetTimeout1() {
+      render.innerText = 'setTimeout1';
+      console.log('setTimeout1');
+    }
+
+    function renderSetTimeout2() {
+      render.innerText = 'setTimeout2';
+      console.log('setTimeout2');
+    }
+
+    function renderRequestAnimationFrame1() {
+      render.innerText = 'requestAnimationFrame1';
+      console.log('requestAnimationFrame1');
+    }
+
+    function renderRequestAnimationFrame2() {
+      render.innerText = 'requestAnimationFrame2';
+      console.log('requestAnimationFrame2');
+    }
+
+    function renderPromise1() {
+      render.innerText = 'Promise1';
+      console.log('Promise1');
+    }
+
+    function renderPromise2() {
+      render.innerText = 'Promise2';
+      console.log('Promise2');
+    }
+
+    function renderPromise3() {
+      render.innerText = 'Promise3';
+      console.log('Promise3');
+    }
+
+    function renderPromise4() {
+      render.innerText = 'Promise4';
+      console.log('Promise4');
+    }
+
+    // div.addEventListener('click', () => {
+    //   renderClick();
+    //   requestAnimationFrame(() => {
+    //     renderRequestAnimationFrame1();
+    //     Promise.resolve().then(() => {
+    //       renderPromise1();
+    //     });
+    //   });
+    //   Promise.resolve().then(() => {
+    //     renderPromise2();
+    //   });
+    //   setTimeout(() => {
+    //     renderSetTimeout();
+    //     Promise.resolve().then(() => {
+    //       renderPromise3();
+    //     });
+    //     requestAnimationFrame(() => {
+    //       renderRequestAnimationFrame2();
+    //       Promise.resolve().then(() => {
+    //         renderPromise4();
+    //       });
+    //     });
+    //   }, 20);
+
+    setTimeout(() => {
+      renderSetTimeout1();
+      requestAnimationFrame(() => {
+        renderRequestAnimationFrame1();
+        Promise.resolve().then(() => {
+          renderPromise1();
+        });
+      });
+      Promise.resolve().then(() => {
+        renderPromise2();
+      });
+      setTimeout(() => {
+        renderSetTimeout2();
+        Promise.resolve().then(() => {
+          renderPromise3();
+        });
+        requestAnimationFrame(() => {
+          renderRequestAnimationFrame2();
+          Promise.resolve().then(() => {
+            renderPromise4();
+          });
+        });
+      }, 20);
+    }, 10);
+  </script> -->
+
+  <!-- 
+    Recalculate Style: innerText，innerHTML，style，class 统一 reflow
+    只有获取HTML 元素的某个属性，才会立马reflow，
+    而对于设置HTML 元素的属性，不会立马reflow，会在之后统一reflow
+   -->
+  <!-- <script>
+    setTimeout(() => {
+      function loopTime(time) {
+        const start = Date.now();
+        while (Date.now() - start < time) {}
+      }
+
+      const render = document.getElementById('render');
+
+      (function renderInnerText() {
+        loopTime(500);
+        render.innerText = 'innerText';
+        render.style.color = 'red';
+      })();
+
+      // console.log(render.getBoundingClientRect());
+      // console.log(render.innerText);
+      // console.log(render.clientWidth);
+
+      (function renderInnerHTML() {
+        loopTime(500);
+        render.innerHTML = 'innerHTML';
+        render.style.color = '';
+        render.className = 'color';
+      })();
+
+      setTimeout(() => {
+        render.style.color = 'red';
+      }, 100);
+    }, 100)
+  </script> -->
+
+  <!-- 在chrome 的performance 中V8/webkit 各一个task -->
+  <!-- <script>
+    function loopTime(time) {
+      const start = Date.now();
+      while (Date.now() - start < time) {}
+    }
+    const render = document.getElementById('render');
+    let text = 'render'
+    render.innerText = text;
+
+    function loop() {
+      loopTime(20);
+      setTimeout(() => {
+        text = text === 'render' ? '' : 'render';
+        render.innerText = text;
+        loop();
+      }, 20);
+    };
+
+    loop();
+  </script> -->
+</body>
+</html>
