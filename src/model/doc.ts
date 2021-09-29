@@ -23,6 +23,10 @@ export class Doc implements VNode {
   pos?: Pos;
   sel?: Selection;
   /**
+   * 用于记录doc rect，避免每次get 都进行reflow
+   */
+  private rect?: DOMRect;
+  /**
    * 标志是否使用输入法编辑器，
    * 并且记录首个位置便于end 时，计算位置
    */
@@ -79,8 +83,12 @@ export class Doc implements VNode {
     return '';
   }
 
+  updateDocRect() {
+    this.rect = this.ele?.getBoundingClientRect();
+  }
+
   getDocRect() {
-    return this.ele?.getBoundingClientRect();
+    return this.rect;
   }
 
   getLinesNum() {

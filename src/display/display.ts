@@ -47,6 +47,8 @@ export class Display {
       emitterInstance.on('update', () => {
         Display.update(doc, cursor, gutters, selected);
       });
+
+      doc.updateDocRect();
     } else {
       console.warn('doc initialized');
     }
