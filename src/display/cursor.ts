@@ -1,3 +1,4 @@
+import { Pos } from '../model/pos';
 import { classPrefix } from '../shared/constants';
 
 export class Cursor {
@@ -9,8 +10,8 @@ export class Cursor {
     this.ele = div;
   }
 
-  updatePosition(x: number, y: number) {
-    this.ele.style.transform = `translate(${x}px, ${y}px)`;
+  updatePosition(pos: Pos) {
+    this.ele.style.transform = `translate(${pos.position.x || 0}px, ${pos.position.y || 0}px)`;
   }
 
   hidden() {

@@ -79,7 +79,7 @@ export class Display {
     }
     if (update) {
       doc.pos?.surmiseInfo(doc);
-      cursor.updatePosition(doc.pos!.position.x, doc.pos!.position.y);
+      cursor.updatePosition(doc.pos!);
       if (doc.sel?.isValid()) {
         doc.sel.surmisePosInfo(doc);
         selected.update(doc.sel, doc.getDocRect()?.width!);
@@ -100,7 +100,7 @@ export class Display {
         input.focus();
         cursor.show();
       }
-      cursor.updatePosition(pos.position.x, pos.position.y);
+      cursor.updatePosition(pos);
     });
     doc.ele?.addEventListener('mousemove', (e) => {
       requestAnimationFrame(() => {
@@ -108,7 +108,7 @@ export class Display {
           const pos = posFromMouse(doc, e);
           doc.sel?.updateEndPos(pos);
           doc.updatePos(pos);
-          cursor.updatePosition(pos.position.x, pos.position.y);
+          cursor.updatePosition(pos);
           emitterEmitUpdate();
         }
       });
@@ -118,7 +118,7 @@ export class Display {
       const pos = posFromMouse(doc, e);
       doc.sel?.updateEndPos(pos);
       doc.updatePos(pos);
-      cursor.updatePosition(pos.position.x, pos.position.y);
+      cursor.updatePosition(pos);
       emitterEmitUpdate();
     });
     input.ele.addEventListener('blur', () => {
@@ -131,6 +131,10 @@ export class Display {
     });
     input.ele.addEventListener('input', (event) => {
       const e = event as InputEvent;
+      if (doc.compositionStartPos) {
+        // 排除composition 使其只通过composition 事件触发
+        return;
+      }
       const type = e.inputType as InputTypes;
       if (doc.posMoveOver) {
         doc.updatePos(doc.pos!.replace({ ch: doc.getLineLength(doc.pos!.line) - 1, sticky: 'after' }));
@@ -175,27 +179,43 @@ export class Display {
     input.ele.addEventListener('compositionupdate', (e) => {
       e_preventDefault(e);
       const text = e.data;
-      // if (text) {
-      //   if (doc.compositionText !== text) {
-      //     doc.updateDoc(
-      //       new Change({
-      //         from: doc.compositionStartPos!,
-      //         to: doc.compositionStartPos!.replace({ ch: doc.compositionStartPos!.ch + doc.compositionText.length }),
-      //         origin: 'paste',
-      //         text: makeArray<string>(text)
-      //       })
-      //     );
-      //     doc.updatePos(doc.pos!.replace({ ch: doc.compositionStartPos!.ch + text.length }));
-      //     doc.compositionText = text;
-      //   }
-      // }
-      console.log(e);
+      if (text) {
+        if (doc.compositionText !== text) {
+          doc.updateDoc(
+            new Change({
+              from: doc.compositionStartPos!,
+              to: doc.compositionStartPos!.replace({ ch: doc.compositionStartPos!.ch + doc.compositionText.length }),
+              origin: 'paste',
+              text: makeArray<string>(text)
+            })
+          );
+          const newPos = doc.pos!.replace({ ch: doc.compositionStartPos!.ch + text.length });
+          doc.updatePos(newPos);
+          input.updatePosition(newPos);
+          doc.compositionText = text;
+        }
+      }
     });
     input.ele.addEventListener('compositionend', (e) => {
       e_preventDefault(e);
+      const text = e.data;
+      if (text) {
+        if (doc.compositionText !== text) {
+          doc.updateDoc(
+            new Change({
+              from: doc.compositionStartPos!,
+              to: doc.compositionStartPos!.replace({ ch: doc.compositionStartPos!.ch + doc.compositionText.length }),
+              origin: 'paste',
+              text: makeArray<string>(text)
+            })
+          );
+          const newPos = doc.pos!.replace({ ch: doc.compositionStartPos!.ch + text.length });
+          doc.updatePos(newPos);
+          input.updatePosition(newPos);
+        }
+      }
       doc.compositionStartPos = undefined;
       doc.compositionText = '';
-      console.log(e);
     });
     input.ele.addEventListener('keydown', (e: KeyboardEvent) => {
       keydownFn(e, doc, cursor, selected);
@@ -538,7 +558,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
        */
       newPos.surmiseInfo(doc);
       doc.updatePos(newPos);
-      cursor.updatePosition(newPos!.position.x, newPos.position.y);
+      cursor.updatePosition(newPos);
     }
   }
 }
