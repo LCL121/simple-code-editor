@@ -20,7 +20,7 @@ import {
   emitter,
   splitTextByEnter
 } from '../shared/utils';
-import { KeyboardMapKeys, keyboardMapKeys, InputTypes } from '../shared/constants';
+import { KeyboardMapKeys, keyboardMapKeys, InputTypes, userAgent } from '../shared/constants';
 
 interface EmitterEvents {
   update: any;
@@ -213,19 +213,17 @@ export class Display {
       e_preventDefault(e);
       const text = e.data;
       if (text) {
-        if (doc.compositionText !== text) {
-          doc.updateDoc(
-            new Change({
-              from: doc.compositionStartPos!,
-              to: doc.compositionStartPos!.replace({ ch: doc.compositionStartPos!.ch + doc.compositionText.length }),
-              origin: 'paste',
-              text: makeArray<string>(text)
-            })
-          );
-          const newPos = doc.pos!.replace({ ch: doc.compositionStartPos!.ch + text.length });
-          doc.updatePos(newPos);
-          input.updatePosition(newPos);
-        }
+        doc.updateDoc(
+          new Change({
+            from: doc.compositionStartPos!,
+            to: doc.compositionStartPos!.replace({ ch: doc.compositionStartPos!.ch + doc.compositionText.length }),
+            origin: 'compose',
+            text: makeArray<string>(text)
+          })
+        );
+        const newPos = doc.pos!.replace({ ch: doc.compositionStartPos!.ch + text.length });
+        doc.updatePos(newPos);
+        input.updatePosition(newPos);
       }
       doc.compositionStartPos = undefined;
       doc.compositionText = '';

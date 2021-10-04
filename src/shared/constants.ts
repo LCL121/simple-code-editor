@@ -48,3 +48,38 @@ export const inputTypes = [
 ] as const;
 
 export type InputTypes = typeof inputTypes[number];
+
+// userAgent
+const _userAgent = navigator.userAgent;
+const _platform = navigator.platform;
+
+const gecko = /gecko\/\d/i.test(_userAgent);
+const edge = /Edge\/(\d+)/.exec(_userAgent);
+const chrome = !edge && /Chrome\//.test(_userAgent);
+// 与code mirror 有所不同
+const webkit = /WebKit\//.test(_userAgent);
+const safari = /Apple Computer/.test(navigator.vendor);
+const presto = /Opera\//.test(_userAgent);
+
+const ios = safari && (/Mobile\/\w+/.test(_userAgent) || navigator.maxTouchPoints > 2);
+const android = /Android/.test(_userAgent);
+const mobile = ios || android || /webOS|BlackBerry|Opera Mini|Opera Mobi|IEMobile/i.test(_userAgent);
+const mac = ios || /Mac/.test(_platform);
+const windows = /win/i.test(_platform);
+const chromeOS = /\bCrOS\b/.test(_userAgent);
+
+export const userAgent = {
+  gecko,
+  edge,
+  chrome,
+  webkit,
+  safari,
+  presto,
+
+  ios,
+  android,
+  mobile,
+  mac,
+  windows,
+  chromeOS
+};
