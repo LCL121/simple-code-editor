@@ -231,6 +231,15 @@ export class Doc implements VNode {
         this.pushLine(newLine, fromLineN + 1);
         this.effect.push(newLine);
       }
+    } else if (origin === 'cut') {
+      if (fromLineN === this.getMaxLineN()) {
+        this.children[fromLineN].updateLine({ tag: 'replace', text: '' });
+        this.children[fromLineN].effectTag = 'update';
+        this.effect.push(this.children[fromLineN]);
+      } else {
+        this.children[fromLineN].effectTag = 'delete';
+        this.effect.push(this.children[fromLineN]);
+      }
     }
   }
 

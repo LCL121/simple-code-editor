@@ -235,7 +235,11 @@ export class Display {
     });
     input.ele.addEventListener('copy', (e) => {
       e_preventDefault(e);
-      setClipboardContents(doc.getSelectedCode());
+      if (doc.sel?.isValid()) {
+        setClipboardContents(doc.getSelectedCode());
+      } else if (doc.pos) {
+        setClipboardContents(doc.getLineText(doc.pos.line));
+      }
     });
     input.ele.addEventListener('paste', async (e) => {
       e_preventDefault(e);
@@ -299,7 +303,7 @@ export class Display {
     });
     input.ele.addEventListener('cut', (e) => {
       e_preventDefault(e);
-      if (doc.sel) {
+      if (doc.sel?.isValid()) {
         const text = doc.getSelectedCode();
         setClipboardContents(text);
         const { from, to } = doc.sel.sort();
@@ -314,6 +318,19 @@ export class Display {
         selected.hidden();
         doc.updatePos(from);
         doc.updateSelection(new Selection(from));
+      } else if (doc.pos) {
+        setClipboardContents(doc.getLineText(doc.pos.line));
+        doc.updateDoc(
+          new Change({
+            from: doc.pos,
+            to: doc.pos,
+            origin: 'cut',
+            text: []
+          })
+        );
+        const newPos = new Pos({ line: doc.pos.line, ch: 0, sticky: 'before' });
+        doc.updatePos(newPos);
+        doc.updateSelection(new Selection(newPos));
       }
     });
   }
