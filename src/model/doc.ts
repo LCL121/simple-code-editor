@@ -158,7 +158,7 @@ export class Doc implements VNode {
     const fromLineN = from.line;
     const toLineN = to.line;
     this.clearPosMap(fromLineN, toLineN);
-    if (origin === 'input') {
+    if (origin === 'input' || origin === 'compose') {
       this.children[fromLineN].updateLine({ text: text[0], tag: 'add', ch: fromCh });
       this.children[fromLineN].effectTag = 'update';
       this.effect.push(this.children[fromLineN]);
@@ -275,7 +275,7 @@ export class Doc implements VNode {
         this.children[i].effectTag = 'update';
         this.effect.push(this.children[i]);
       }
-    } else if (origin === 'paste') {
+    } else if (origin === 'paste' || origin === 'input' || origin === 'compose') {
       /**
        * textLen === to - from => update
        * textLen < to - from => update delete

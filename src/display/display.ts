@@ -148,7 +148,7 @@ export class Display {
               new Change({
                 from,
                 to,
-                origin: 'paste',
+                origin: 'input',
                 text: makeArray<string>(e.data)
               })
             );
@@ -172,9 +172,22 @@ export class Display {
     });
     input.ele.addEventListener('compositionstart', (e) => {
       e_preventDefault(e);
+      if (doc.sel?.isValid()) {
+        const { from, to } = doc.sel.sort();
+        doc.updateDoc(
+          new Change({
+            from,
+            to,
+            origin: '-delete',
+            text: []
+          })
+        );
+        doc.updatePos(from);
+        doc.updateSelection(new Selection(from));
+        selected.hidden();
+      }
       doc.compositionStartPos = doc.pos;
       doc.compositionText = '';
-      console.log(e);
     });
     input.ele.addEventListener('compositionupdate', (e) => {
       e_preventDefault(e);
@@ -185,7 +198,7 @@ export class Display {
             new Change({
               from: doc.compositionStartPos!,
               to: doc.compositionStartPos!.replace({ ch: doc.compositionStartPos!.ch + doc.compositionText.length }),
-              origin: 'paste',
+              origin: 'compose',
               text: makeArray<string>(text)
             })
           );
