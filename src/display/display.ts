@@ -138,17 +138,20 @@ export class Display {
       }
       if (type === 'insertText') {
         if (e.data) {
-          if (doc.sel?.isValid) {
-            // const { from, to } = doc.sel.sort();
-            // doc.updateDoc(
-            //   new Change({
-            //     from,
-            //     to,
-            //     origin: 'paste',
-            //     text: makeArray<string>(e.data)
-            //   })
-            // );
-            // doc.updatePos(from.replace({ ch: from.ch + 1 }));
+          if (doc.sel?.isValid()) {
+            const { from, to } = doc.sel.sort();
+            doc.updateDoc(
+              new Change({
+                from,
+                to,
+                origin: 'paste',
+                text: makeArray<string>(e.data)
+              })
+            );
+            const newPos = from.replace({ ch: from.ch + 1 });
+            doc.updatePos(newPos);
+            doc.updateSelection(new Selection(newPos));
+            selected.hidden();
           } else {
             doc.updateDoc(
               new Change({
@@ -214,11 +217,20 @@ export class Display {
             origin: 'paste',
             text: makeArray<string>(texts)
           });
-          const newPos = new Pos({
-            line: from.line + texts.length - 1,
-            ch: texts[texts.length - 1].length,
-            sticky: 'before'
-          });
+          let newPos: Pos;
+          if (to.line - from.line + 1 === texts.length && texts.length === 1) {
+            newPos = new Pos({
+              line: from.line,
+              ch: from.getPosChBySticky() + texts[0].length,
+              sticky: 'before'
+            });
+          } else {
+            newPos = new Pos({
+              line: from.line + texts.length - 1,
+              ch: texts[texts.length - 1].length,
+              sticky: 'before'
+            });
+          }
           selected.hidden();
           doc.updatePos(newPos);
           doc.updateSelection(new Selection(newPos));

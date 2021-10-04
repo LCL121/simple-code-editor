@@ -289,7 +289,7 @@ export class Doc implements VNode {
       if (textLen === changeLine && textLen === 1) {
         this.children[fromLineN].updateLine({
           tag: 'replace',
-          text: `${fromLineText.substring(0, fromCh)}${text}${fromLineText.substring(fromCh)}`
+          text: `${fromLineText.substring(0, fromCh)}${text}${fromLineText.substring(toCh)}`
         });
         this.children[fromLineN].effectTag = 'update';
         this.effect.push(this.children[fromLineN]);
