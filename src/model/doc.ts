@@ -5,7 +5,7 @@ import { Change } from './change';
 import { Selection } from './selection';
 import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
-import { splitTextByEnter } from '../shared/utils';
+import { makeArray, splitTextByEnter } from '../shared/utils';
 import { DocHistory } from './history';
 
 export class Doc implements VNode {
@@ -351,13 +351,36 @@ export class Doc implements VNode {
     }
   }
 
-  updateDoc(change: Change) {
-    console.log(change);
-    this.history.push(change);
+  updateDoc(change: Change, isPush = true) {
+    if (isPush) {
+      console.log(change);
+      this.history.push(change);
+    }
     if (change.from.equalCursorPos(change.to)) {
       this._updateDocEqualPos(change);
     } else {
       this._updateDocUnequalPos(change);
+    }
+  }
+
+  reverseUpdateDocUndo(change: Change) {
+    const { origin, text, removed } = change;
+    if (origin === '-delete') {
+      const removedText = removed?.join('');
+      const { from, to } = change.sort();
+      if (removedText) {
+        const texts = splitTextByEnter(removedText);
+        this.updatePos(to);
+        this.updateDoc(
+          new Change({
+            origin: 'paste',
+            from: from,
+            to: from,
+            text: makeArray(texts)
+          }),
+          false
+        );
+      }
     }
   }
 

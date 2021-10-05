@@ -1,4 +1,4 @@
-import { Pos } from './pos';
+import { Pos, sortTwoPos } from './pos';
 import { ChangeOrigin } from '../shared/constants';
 
 interface ChangeOptions {
@@ -22,6 +22,10 @@ export class Change {
     this.origin = options.origin;
     this.removed = options.removed;
     this.text = options.text;
+  }
+
+  sort() {
+    return sortTwoPos(this.from, this.to);
   }
 
   replace(options: Partial<ChangeOptions>) {

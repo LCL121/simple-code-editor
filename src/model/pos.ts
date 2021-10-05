@@ -285,3 +285,25 @@ export function judgeChBySticky(ch: number, sticky: PosSticky) {
 export function isPos(p: any): p is Pos {
   return p instanceof Pos;
 }
+
+export function sortTwoPos(a: Pos, b: Pos) {
+  let from: Pos;
+  let to: Pos;
+  let equal = false;
+  if (a.cmp(b) < 0) {
+    from = a;
+    to = b;
+  } else if (a.cmp(b) === 0) {
+    from = a;
+    to = b;
+    equal = true;
+  } else {
+    from = b;
+    to = a;
+  }
+  return {
+    from,
+    to,
+    equal
+  };
+}

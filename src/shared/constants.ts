@@ -45,7 +45,8 @@ export type InputTypes = typeof inputTypes[number];
 export const shortcutMap = {
   ctrl_a: 'selectedAll' as const,
   ctrl_z: 'undo' as const,
-  ctrl_y: 'redo' as const
+  ctrl_y: 'redo' as const,
+  shift_Tab: 'reTab' as const
 };
 
 export const shortcutMapKeys = Object.keys(shortcutMap);

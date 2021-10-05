@@ -365,6 +365,37 @@ function createVNodeElement(node: VNode): HTMLElement {
 }
 
 function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selected) {
+  // 快捷键处理
+  const shortcutKeyName = getShortcutKeyName(e);
+  if (isShortcutKeyName(shortcutKeyName)) {
+    e_preventDefault(e);
+    const shortcutValue = shortcutMap[shortcutKeyName];
+    if (shortcutValue === 'selectedAll') {
+      const fromPos = new Pos({ line: 0, ch: 0, sticky: 'before' });
+      const toPos = new Pos({ line: doc.getMaxLineN(), ch: doc.getLastLine().text.length, sticky: 'before' });
+      fromPos.surmiseInfo(doc);
+      toPos.surmiseInfo(doc);
+      const newSelection = new Selection(fromPos, toPos);
+
+      doc.updatePos(toPos);
+      cursor.updatePosition(toPos);
+      doc.updateSelection(newSelection);
+      selected.update(newSelection);
+    } else if (shortcutValue === 'undo') {
+      if (doc.pos) {
+        doc.updateDoc(new Change({ origin: 'undo', from: doc.pos, to: doc.pos, text: [] }));
+      }
+    } else if (shortcutValue === 'redo') {
+      if (doc.pos) {
+        doc.updateDoc(new Change({ origin: 'redo', from: doc.pos, to: doc.pos, text: [] }));
+      }
+    } else if (shortcutValue === 'reTab') {
+      // TODO
+      console.log('reTab todo');
+    }
+    return;
+  }
+
   if (keyboardMapKeys.includes(e.key)) {
     e_preventDefault(e);
     const key = e.key as KeyboardMapKeys;
@@ -626,31 +657,5 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
       cursor.updatePosition(newPos);
     }
     return;
-  }
-
-  // 快捷键处理
-  const shortcutKeyName = getShortcutKeyName(e);
-  if (isShortcutKeyName(shortcutKeyName)) {
-    const shortcutValue = shortcutMap[shortcutKeyName];
-    if (shortcutValue === 'selectedAll') {
-      const fromPos = new Pos({ line: 0, ch: 0, sticky: 'before' });
-      const toPos = new Pos({ line: doc.getMaxLineN(), ch: doc.getLastLine().text.length, sticky: 'before' });
-      fromPos.surmiseInfo(doc);
-      toPos.surmiseInfo(doc);
-      const newSelection = new Selection(fromPos, toPos);
-
-      doc.updatePos(toPos);
-      cursor.updatePosition(toPos);
-      doc.updateSelection(newSelection);
-      selected.update(newSelection);
-    } else if (shortcutValue === 'undo') {
-      if (doc.pos) {
-        doc.updateDoc(new Change({ origin: 'undo', from: doc.pos, to: doc.pos, text: [] }));
-      }
-    } else if (shortcutValue === 'redo') {
-      if (doc.pos) {
-        doc.updateDoc(new Change({ origin: 'redo', from: doc.pos, to: doc.pos, text: [] }));
-      }
-    }
   }
 }

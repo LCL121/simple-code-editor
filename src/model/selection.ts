@@ -1,5 +1,5 @@
 import { Doc } from './doc';
-import { Pos, surmiseInfoFromPos } from './pos';
+import { Pos, surmiseInfoFromPos, sortTwoPos } from './pos';
 
 export class Selection {
   startPos: Pos;
@@ -24,25 +24,7 @@ export class Selection {
 
   sort() {
     const { startPos, endPos } = this;
-    let from: Pos;
-    let to: Pos;
-    let equal = false;
-    if (startPos.cmp(endPos) < 0) {
-      from = startPos;
-      to = endPos;
-    } else if (!this.isValid()) {
-      from = startPos;
-      to = endPos;
-      equal = true;
-    } else {
-      from = endPos;
-      to = startPos;
-    }
-    return {
-      from,
-      to,
-      equal
-    };
+    return sortTwoPos(startPos, endPos);
   }
 
   surmisePosInfo(doc: Doc) {

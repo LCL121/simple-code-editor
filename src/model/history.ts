@@ -3,11 +3,11 @@ import { Change } from './change';
 import { Doc } from './doc';
 
 export class DocHistory {
-  private _undo: Change[] = [];
-  private _redo: Change[] = [];
+  private readonly _undo: Change[] = [];
+  private readonly _redo: Change[] = [];
+  private readonly _doc: Doc;
   private _isSel: boolean = false; // 标记前一次操作是否选区操作
   private _op?: ChangeOrigin; // 标记前一次操作符
-  private _doc: Doc;
 
   constructor(doc: Doc) {
     this._doc = doc;
@@ -52,7 +52,10 @@ export class DocHistory {
   private _popUndo() {
     const c = this._undo.pop();
     if (c) {
+      this._doc.reverseUpdateDocUndo(c);
       this._redo.push(c);
+      this._op = 'undo';
+      this._isSel = false;
     }
   }
 
