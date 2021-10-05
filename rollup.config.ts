@@ -21,7 +21,9 @@ const umdConfig = {
 };
 
 if (args.env === 'build') {
-  umdConfig.plugins.push(terser());
+  umdConfig.plugins.push(
+    terser({ compress: { drop_console: true, drop_debugger: true }, output: { comments: false } })
+  );
   umdConfig.output.file = './dist/simpleCodeEditor.min.js';
 }
 

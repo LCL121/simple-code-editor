@@ -6,11 +6,23 @@ const concat = require('gulp-concat');
 const minifyCSS = require('gulp-minify-css');
 const autoprefixer = require('gulp-autoprefixer');
 const less = require('gulp-less');
+const header = require('gulp-header');
+const pkg = require('../package.json');
 
 rimraf.sync(path.resolve(__dirname, '../dist'));
 
 execa('rollup', ['-c', '--env=build'], {
   stdio: 'inherit'
+}).then(() => {
+  gulp.src('dist/simpleCodeEditor.min.js')
+  .pipe(header(
+`/*!
+ * simpleCodeEditor v${pkg.version}
+ * (c) 2021 ${pkg.author.name}
+ * Released under the ${pkg.license} License.
+ */
+`))
+  .pipe(gulp.dest('./dist/'))
 });
 
 gulp.src('src/styles/**/*.less')
