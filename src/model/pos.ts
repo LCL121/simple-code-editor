@@ -281,3 +281,7 @@ export function judgeChBySticky(ch: number, sticky: PosSticky) {
   }
   return ch + 1;
 }
+
+export function isPos(p: any): p is Pos {
+  return p instanceof Pos;
+}

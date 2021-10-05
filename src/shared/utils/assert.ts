@@ -1,4 +1,3 @@
-import { Pos } from '../../model/pos';
 import { shortcutMap, shortcutMapKeys } from '../constants';
 
 export function isString(s: any): s is string {
@@ -11,10 +10,6 @@ export function isUndefined(u: any): u is undefined {
 
 export function isNumber(n: any): n is number {
   return typeof n === 'number';
-}
-
-export function isPos(p: any): p is Pos {
-  return p instanceof Pos;
 }
 
 export function isShortcutKeyName(s: any): s is keyof typeof shortcutMap {

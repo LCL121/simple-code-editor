@@ -6,7 +6,7 @@ import { Cursor } from './cursor';
 import { Gutters } from './gutters';
 import { Selected } from './selected';
 import { PosSticky, VNode } from '../shared/type';
-import { posFromMouse, Pos } from '../model/pos';
+import { posFromMouse, Pos, isPos } from '../model/pos';
 import { Selection } from '../model/selection';
 import {
   createElement,
@@ -19,7 +19,6 @@ import {
   getClipboardContents,
   emitter,
   splitTextByEnter,
-  isPos,
   getShortcutKeyName,
   isShortcutKeyName
 } from '../shared/utils';
