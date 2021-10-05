@@ -6,6 +6,7 @@ import { Selection } from './selection';
 import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
 import { splitTextByEnter } from '../shared/utils';
+import { DocHistory } from './history';
 
 export class Doc implements VNode {
   parent: ParentVNode;
@@ -25,7 +26,7 @@ export class Doc implements VNode {
   /**
    * 用于记录doc rect，避免每次get 都进行reflow
    */
-  private rect?: DOMRect;
+  private _rect?: DOMRect;
   /**
    * 记录首个位置便于end 时，计算位置
    */
@@ -35,12 +36,15 @@ export class Doc implements VNode {
    * 标志是否使用输入法编辑器
    */
   isComposing = false;
+  history: DocHistory;
+
   constructor(text: string) {
-    this.children = this.createLines(splitTextByEnter(text));
+    this.children = this._createLines(splitTextByEnter(text));
     this.init = true;
+    this.history = new DocHistory(this);
   }
 
-  private createLines(linesText: string[]) {
+  private _createLines(linesText: string[]) {
     const result: Line[] = [];
     for (let idx = 0; idx < linesText.length; idx++) {
       const newLine = new Line(linesText[idx], this);
@@ -52,7 +56,7 @@ export class Doc implements VNode {
     return result;
   }
 
-  private createLine(lineText: string) {
+  private _createLine(lineText: string) {
     return new Line(lineText, this);
   }
 
@@ -88,11 +92,11 @@ export class Doc implements VNode {
   }
 
   updateDocRect() {
-    this.rect = this.ele?.getBoundingClientRect();
+    this._rect = this.ele?.getBoundingClientRect();
   }
 
   getDocRect() {
-    return this.rect;
+    return this._rect;
   }
 
   getLinesNum() {
@@ -155,7 +159,7 @@ export class Doc implements VNode {
     }
   }
 
-  private updateDocEqualPos(change: Change) {
+  private _updateDocEqualPos(change: Change) {
     const { from, to, origin, text } = change;
     const fromCh = judgeChBySticky(from.ch, from.sticky);
     const fromLineN = from.line;
@@ -170,7 +174,7 @@ export class Doc implements VNode {
       this.children[fromLineN].updateLine({ tag: 'replace', text: fromLineText.substring(0, fromCh) });
       this.children[fromLineN].effectTag = 'update';
       this.effect.push(this.children[fromLineN]);
-      const newLine = this.createLine(fromLineText.substring(fromCh));
+      const newLine = this._createLine(fromLineText.substring(fromCh));
       newLine.effectTag = 'add';
       this.pushLine(newLine, fromLineN + 1);
       this.effect.push(newLine);
@@ -226,9 +230,9 @@ export class Doc implements VNode {
       for (let i = textLen - 1; i > 0; i--) {
         let newLine: Line;
         if (i === textLen - 1) {
-          newLine = this.createLine(`${text[i]}${fromLineText.substring(fromCh)}`);
+          newLine = this._createLine(`${text[i]}${fromLineText.substring(fromCh)}`);
         } else {
-          newLine = this.createLine(text[i]);
+          newLine = this._createLine(text[i]);
         }
         newLine.effectTag = 'add';
         this.pushLine(newLine, fromLineN + 1);
@@ -246,7 +250,7 @@ export class Doc implements VNode {
     }
   }
 
-  private updateDocUnequalPos(change: Change) {
+  private _updateDocUnequalPos(change: Change) {
     const { from, to, origin, text } = change;
     const fromCh = judgeChBySticky(from.ch, from.sticky);
     const fromLineN = from.line;
@@ -273,7 +277,7 @@ export class Doc implements VNode {
       this.children[fromLineN].updateLine({ tag: 'replace', text: fromLineText.substring(0, fromCh) });
       this.children[fromLineN].effectTag = 'update';
       this.effect.push(this.children[fromLineN]);
-      const newLine = this.createLine(toLineText.substring(toCh));
+      const newLine = this._createLine(toLineText.substring(toCh));
       newLine.effectTag = 'add';
       this.pushLine(newLine, toLineN + 1);
       this.effect.push(newLine);
@@ -338,7 +342,7 @@ export class Doc implements VNode {
         }
       } else if (textLen > changeLine) {
         for (let i = textLen - 1; i >= minLen; i--) {
-          const newLine = this.createLine(text[i]);
+          const newLine = this._createLine(text[i]);
           newLine.effectTag = 'add';
           this.pushLine(newLine, minLen);
           this.effect.push(newLine);
@@ -349,10 +353,11 @@ export class Doc implements VNode {
 
   updateDoc(change: Change) {
     console.log(change);
+    this.history.push(change);
     if (change.from.equalCursorPos(change.to)) {
-      this.updateDocEqualPos(change);
+      this._updateDocEqualPos(change);
     } else {
-      this.updateDocUnequalPos(change);
+      this._updateDocUnequalPos(change);
     }
   }
 

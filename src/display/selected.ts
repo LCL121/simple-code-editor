@@ -7,15 +7,15 @@ const unFocusClass = `${classPrefix}_selected_item`;
 
 export class Selected {
   ele: HTMLDivElement;
-  private selectedItem = new Map<number, HTMLDivElement>();
+  private _selectedItem = new Map<number, HTMLDivElement>();
   constructor() {
     const selected = document.createElement('div');
     selected.setAttribute('class', `${classPrefix}_selected`);
     this.ele = selected;
   }
 
-  private updateSelectedItem(lineN: number, options?: { start?: number; end?: number }) {
-    const div = this.selectedItem.get(lineN);
+  private _updateSelectedItem(lineN: number, options?: { start?: number; end?: number }) {
+    const div = this._selectedItem.get(lineN);
     const left = options?.start || 0;
     if (div) {
       div.style.left = `${left}px`;
@@ -26,29 +26,29 @@ export class Selected {
       item.style.top = `${lineN * lineHeight}px`;
       item.style.left = `${left}px`;
       item.style.width = options?.end !== undefined ? `${options.end - left}px` : `calc(100% - ${left}px)`;
-      this.selectedItem.set(lineN, item);
+      this._selectedItem.set(lineN, item);
       this.ele.append(item);
     }
   }
 
   clear() {
-    this.selectedItem.clear();
+    this._selectedItem.clear();
   }
 
   hidden() {
-    for (const [key, value] of this.selectedItem) {
+    for (const [key, value] of this._selectedItem) {
       value.style.width = '0px';
     }
   }
 
   focus() {
-    for (const [key, value] of this.selectedItem) {
+    for (const [key, value] of this._selectedItem) {
       value.setAttribute('class', focusClass);
     }
   }
 
   blur() {
-    for (const [key, value] of this.selectedItem) {
+    for (const [key, value] of this._selectedItem) {
       value.setAttribute('class', unFocusClass);
     }
   }
@@ -60,13 +60,13 @@ export class Selected {
     }
     if (!equal) {
       if (from.cmpLine(to) !== 0) {
-        this.updateSelectedItem(from.line, { start: from.position.x });
+        this._updateSelectedItem(from.line, { start: from.position.x });
         for (let i = from.line + 1; i < to.line; i++) {
-          this.updateSelectedItem(i);
+          this._updateSelectedItem(i);
         }
-        this.updateSelectedItem(to.line, { end: to.position.x });
+        this._updateSelectedItem(to.line, { end: to.position.x });
       } else {
-        this.updateSelectedItem(from.line, { start: from.position.x, end: to.position.x });
+        this._updateSelectedItem(from.line, { start: from.position.x, end: to.position.x });
       }
     }
   }

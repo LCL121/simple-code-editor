@@ -23,4 +23,14 @@ export class Change {
     this.removed = options.removed;
     this.text = options.text;
   }
+
+  replace(options: Partial<ChangeOptions>) {
+    const { from, to, origin, removed, text } = options;
+    return new Change({
+      from: from || this.from,
+      to: to || this.to,
+      origin: origin || this.origin,
+      text: text || this.text
+    });
+  }
 }

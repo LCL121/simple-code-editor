@@ -44,10 +44,10 @@ export class Display {
       container.appendChild(wrapper.ele);
       doc.init = false;
 
-      Display.addEventListener(doc, input, cursor, selected);
+      Display._addEventListener(doc, input, cursor, selected);
 
       emitterInstance.on('update', () => {
-        Display.update(doc, cursor, gutters, selected);
+        Display._update(doc, cursor, gutters, selected);
       });
 
       doc.updateDocRect();
@@ -56,7 +56,7 @@ export class Display {
     }
   }
 
-  private static update(doc: Doc, cursor: Cursor, gutters: Gutters, selected: Selected) {
+  private static _update(doc: Doc, cursor: Cursor, gutters: Gutters, selected: Selected) {
     if (doc.mouseDown && doc.sel) {
       selected.update(doc.sel);
     }
@@ -89,7 +89,7 @@ export class Display {
     }
   }
 
-  private static addEventListener(doc: Doc, input: Input, cursor: Cursor, selected: Selected) {
+  private static _addEventListener(doc: Doc, input: Input, cursor: Cursor, selected: Selected) {
     doc.ele?.addEventListener('mousedown', (e) => {
       e_preventDefault(e);
       selected.hidden();
@@ -178,6 +178,7 @@ export class Display {
               from: doc.compositionStartPos,
               to: doc.compositionStartPos.replace({ ch: doc.compositionStartPos.ch + doc.compositionText.length }),
               origin: '-delete',
+              removed: makeArray(doc.compositionText),
               text: []
             })
           );
@@ -200,6 +201,7 @@ export class Display {
             from,
             to,
             origin: '-delete',
+            removed: makeArray(doc.getSelectedCode()),
             text: []
           })
         );
@@ -253,12 +255,14 @@ export class Display {
         const texts = splitTextByEnter(text);
         if (doc.sel.isValid()) {
           const { from, to } = doc.sel.sort();
-          doc.updateDoc({
-            from,
-            to,
-            origin: 'paste',
-            text: makeArray<string>(texts)
-          });
+          doc.updateDoc(
+            new Change({
+              from,
+              to,
+              origin: 'paste',
+              text: makeArray<string>(texts)
+            })
+          );
           let newPos: Pos;
           if (to.line - from.line + 1 === texts.length && texts.length === 1) {
             newPos = new Pos({
@@ -289,12 +293,14 @@ export class Display {
               })
             );
           } else {
-            doc.updateDoc({
-              from: pos,
-              to: pos,
-              origin: 'paste',
-              text: makeArray<string>(texts)
-            });
+            doc.updateDoc(
+              new Change({
+                from: pos,
+                to: pos,
+                origin: 'paste',
+                text: makeArray<string>(texts)
+              })
+            );
             const newPos = new Pos({
               line: pos.line + texts.length - 1,
               ch: texts[texts.length - 1].length,
@@ -317,20 +323,23 @@ export class Display {
             from,
             to,
             origin: 'cut',
-            text: [text]
+            removed: makeArray(text),
+            text: []
           })
         );
         selected.hidden();
         doc.updatePos(from);
         doc.updateSelection(new Selection(from));
       } else if (doc.pos) {
-        setClipboardContents(doc.getLineText(doc.pos.line));
+        const text = doc.getLineText(doc.pos.line);
+        setClipboardContents(text);
         doc.updateDoc(
           new Change({
             from: doc.pos,
             to: doc.pos,
             origin: 'cut',
-            text: []
+            removed: [text],
+            text: [text]
           })
         );
         const newPos = new Pos({ line: doc.pos.line, ch: 0, sticky: 'before' });
@@ -437,6 +446,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
                 from,
                 to,
                 origin: '-delete',
+                removed: makeArray(doc.getSelectedCode()),
                 text: []
               })
             );
@@ -450,10 +460,12 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
             }
             const currentPosBackSpace = doc.pos!;
             const chIdxBackSpace = currentPosBackSpace.getPosChBySticky();
+            let text: string;
             if (chIdxBackSpace === 0) {
               if (currentPosBackSpace.line === 0) {
                 return;
               } else {
+                text = '\n';
                 doc.updatePos(
                   new Pos({
                     line: currentPosBackSpace.line - 1,
@@ -463,13 +475,15 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
                 );
               }
             } else {
-              doc.updatePos(currentPosBackSpace!.replace({ ch: currentPosBackSpace!.ch - 1 }));
+              text = doc.getLineText(currentPosBackSpace.line).substring(chIdxBackSpace - 1, chIdxBackSpace);
+              doc.updatePos(currentPosBackSpace!.replace({ ch: currentPosBackSpace.ch - 1 }));
             }
             doc.updateDoc(
               new Change({
                 from: currentPosBackSpace!,
                 to: currentPosBackSpace!,
                 origin: '-delete',
+                removed: makeArray(text),
                 text: []
               })
             );
@@ -484,6 +498,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
                 from,
                 to,
                 origin: 'delete-',
+                removed: makeArray(doc.getSelectedCode()),
                 text: []
               })
             );
@@ -495,11 +510,26 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
               doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
               doc.posMoveOver = false;
             }
+            const currentPosDelete = doc.pos!;
+            const currentLineDelete = currentPosDelete.line;
+            const currentTextDelete = doc.getLineText(currentLineDelete);
+            const chIdxDelete = currentPosDelete.getPosChBySticky();
+            let text: string;
+            if (chIdxDelete === currentTextDelete.length) {
+              if (currentLineDelete === doc.getMaxLineN()) {
+                return;
+              } else {
+                text = '\n';
+              }
+            } else {
+              text = currentTextDelete.substr(chIdxDelete, 1);
+            }
             doc.updateDoc(
               new Change({
                 from: doc.pos!,
                 to: doc.pos!,
                 origin: 'delete-',
+                removed: makeArray(text),
                 text: []
               })
             );
@@ -613,6 +643,14 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
       cursor.updatePosition(toPos);
       doc.updateSelection(newSelection);
       selected.update(newSelection);
+    } else if (shortcutValue === 'undo') {
+      if (doc.pos) {
+        doc.updateDoc(new Change({ origin: 'undo', from: doc.pos, to: doc.pos, text: [] }));
+      }
+    } else if (shortcutValue === 'redo') {
+      if (doc.pos) {
+        doc.updateDoc(new Change({ origin: 'redo', from: doc.pos, to: doc.pos, text: [] }));
+      }
     }
   }
 }

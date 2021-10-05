@@ -6,18 +6,10 @@ export const docLeftGap = 5 + 30 + 5;
 
 export const docTopGap = 5;
 
-export const changeOrigin = [
-  'cut',
-  'undo',
-  'paste',
-  'input',
-  '-delete',
-  'delete-',
-  'drag',
-  'compose',
-  'enter',
-  'tab'
-] as const;
+// compose 合并特殊
+export const mergeOps = ['-delete', 'delete-', 'input'] as const;
+
+export const changeOrigin = [...mergeOps, 'compose', 'cut', 'undo', 'redo', 'paste', 'drag', 'enter', 'tab'] as const;
 
 export type ChangeOrigin = typeof changeOrigin[number];
 
@@ -50,13 +42,10 @@ export const inputTypes = [
 
 export type InputTypes = typeof inputTypes[number];
 
-export const shortcutKeys = ['selectedAll', 'undo'] as const;
-
-export type ShortcutKeys = typeof shortcutKeys[number];
-
 export const shortcutMap = {
   ctrl_a: 'selectedAll' as const,
-  ctrl_z: 'undo' as const
+  ctrl_z: 'undo' as const,
+  ctrl_y: 'redo' as const
 };
 
 export const shortcutMapKeys = Object.keys(shortcutMap);

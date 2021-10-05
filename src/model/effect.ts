@@ -1,52 +1,52 @@
 import { emitterEmitUpdate } from '../display/display';
 
 export class Effect<T> {
-  private queue: T[] = [];
-  private timer: number | null = null;
+  private _queue: T[] = [];
+  private _timer: number | null = null;
 
   push(i: T) {
-    const idx = this.queue.indexOf(i);
+    const idx = this._queue.indexOf(i);
     if (idx !== -1) {
-      this.queue.splice(idx, 1);
+      this._queue.splice(idx, 1);
     }
-    this.queue.push(i);
+    this._queue.push(i);
 
-    if (this.timer === null && this.queue.length > 0) {
-      this.timer = requestAnimationFrame(() => {
+    if (this._timer === null && this._queue.length > 0) {
+      this._timer = requestAnimationFrame(() => {
         emitterEmitUpdate();
-        this.timer = null;
+        this._timer = null;
       });
     }
   }
 
   shift() {
-    if (this.queue.length > 0) {
-      return this.queue.shift();
+    if (this._queue.length > 0) {
+      return this._queue.shift();
     }
   }
 
   firstEffect() {
-    return this.queue[0];
+    return this._queue[0];
   }
 
   lastEffect() {
-    return this.queue[this.length() - 1];
+    return this._queue[this.length() - 1];
   }
 
   has(i: T) {
-    if (this.queue.includes(i)) {
+    if (this._queue.includes(i)) {
       return true;
     }
     return false;
   }
 
   length() {
-    return this.queue.length;
+    return this._queue.length;
   }
 
   clear() {
-    while (this.queue.length > 0) {
-      this.queue.pop();
+    while (this._queue.length > 0) {
+      this._queue.pop();
     }
   }
 }

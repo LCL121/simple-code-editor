@@ -7,19 +7,19 @@ export class Gutters {
     this.lineNum = lineNum;
     const gutters = document.createElement('div');
     gutters.setAttribute('class', `${classPrefix}_gutters`);
-    gutters.append(this.createGutters(lineNum));
+    gutters.append(this._createGutters(lineNum));
     this.ele = gutters;
   }
 
-  private createGutters(num: number) {
+  private _createGutters(num: number) {
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < num; i++) {
-      fragment.appendChild(this.createGutter(i + 1));
+      fragment.appendChild(this._createGutter(i + 1));
     }
     return fragment;
   }
 
-  private createGutter(num: number) {
+  private _createGutter(num: number) {
     const div = document.createElement('div');
     div.setAttribute('class', `${classPrefix}_gutters_item`);
     div.innerText = `${num}`;
@@ -36,7 +36,7 @@ export class Gutters {
     } else if (num < 0) {
       const fragment = document.createDocumentFragment();
       for (let i = this.lineNum + 1; i <= lineNum; i++) {
-        fragment.appendChild(this.createGutter(i));
+        fragment.appendChild(this._createGutter(i));
       }
       this.ele.append(fragment);
     }
