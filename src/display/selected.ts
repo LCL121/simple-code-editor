@@ -14,18 +14,18 @@ export class Selected {
     this.ele = selected;
   }
 
-  private updateSelectedItem(lineN: number, width: number, options?: { start?: number; end?: number }) {
+  private updateSelectedItem(lineN: number, options?: { start?: number; end?: number }) {
     const div = this.selectedItem.get(lineN);
     const left = options?.start || 0;
     if (div) {
       div.style.left = `${left}px`;
-      div.style.width = options?.end !== undefined ? `${options.end - left}px` : `${width - left}px`;
+      div.style.width = options?.end !== undefined ? `${options.end - left}px` : `calc(100% - ${left}px)`;
     } else {
       const item = document.createElement('div');
       item.setAttribute('class', focusClass);
       item.style.top = `${lineN * lineHeight}px`;
       item.style.left = `${left}px`;
-      item.style.width = options?.end !== undefined ? `${options.end - left}px` : `${width - left}px`;
+      item.style.width = options?.end !== undefined ? `${options.end - left}px` : `calc(100% - ${left}px)`;
       this.selectedItem.set(lineN, item);
       this.ele.append(item);
     }
@@ -53,20 +53,20 @@ export class Selected {
     }
   }
 
-  update(sel: Selection, width: number, isHidden = true) {
+  update(sel: Selection, isHidden = true) {
     const { from, to, equal } = sel.sort();
     if (isHidden) {
       this.hidden();
     }
     if (!equal) {
       if (from.cmpLine(to) !== 0) {
-        this.updateSelectedItem(from.line, width, { start: from.position.x });
+        this.updateSelectedItem(from.line, { start: from.position.x });
         for (let i = from.line + 1; i < to.line; i++) {
-          this.updateSelectedItem(i, width);
+          this.updateSelectedItem(i);
         }
-        this.updateSelectedItem(to.line, width, { end: to.position.x });
+        this.updateSelectedItem(to.line, { end: to.position.x });
       } else {
-        this.updateSelectedItem(from.line, width, { start: from.position.x, end: to.position.x });
+        this.updateSelectedItem(from.line, { start: from.position.x, end: to.position.x });
       }
     }
   }

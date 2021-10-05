@@ -22,7 +22,7 @@ span {
   &_textarea {
     position: absolute;
     z-index: -1;
-    left: 35px;
+    left: @gutters-width + @gutters-margin-right;
     opacity: 0;
     width: 1px;
     height: 15px;
@@ -32,7 +32,8 @@ span {
 
   &_selected {
     position: absolute;
-    left: 35px;
+    left: @gutters-width + @gutters-margin-right;
+    width: calc(100% - @gutters-width - @gutters-margin-right);
 
     &_item {
       position: absolute;

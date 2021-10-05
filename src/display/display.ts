@@ -57,7 +57,7 @@ export class Display {
 
   private static update(doc: Doc, cursor: Cursor, gutters: Gutters, selected: Selected) {
     if (doc.mouseDown && doc.sel) {
-      selected.update(doc.sel, doc.getDocRect()!.width);
+      selected.update(doc.sel);
     }
     let update = false;
     while (doc.effect.length() > 0) {
@@ -83,7 +83,7 @@ export class Display {
       cursor.updatePosition(doc.pos!);
       if (doc.sel?.isValid()) {
         doc.sel.surmisePosInfo(doc);
-        selected.update(doc.sel, doc.getDocRect()?.width!);
+        selected.update(doc.sel);
       }
     }
   }
@@ -566,7 +566,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
             const newSel = new Selection(newStartPos, newEndPos);
             doc.updatePos(newEndPos);
             doc.updateSelection(newSel);
-            selected.update(newSel, doc.getDocRect()?.width!);
+            selected.update(newSel);
           } else {
             if (doc.posMoveOver) {
               doc.updatePos(pos!.replace({ ch: doc.getLineLength(pos!.line) - 1, sticky: 'after' }));
