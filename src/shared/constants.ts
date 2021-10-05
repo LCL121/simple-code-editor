@@ -44,7 +44,8 @@ export const inputTypes = [
   'insertCompositionText',
   'insertFromDrop',
   'deleteByCut',
-  'deleteByDrag'
+  'deleteByDrag',
+  'deleteContentBackward' // 处理composition input 兼容
 ] as const;
 
 export type InputTypes = typeof inputTypes[number];

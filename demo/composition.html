@@ -20,20 +20,25 @@
                                              2. chrome/edge 触发二次 deleteContentBackward、insertText
                                              3. IE 触发一次（无inputType）
    -->
+  <!-- 
+    正常时，composition end firefox/chrome 都是正常input 格式
+    通过blur 时 composition end firefox 正常input 格式，chrome 还是composition 格式 
+  -->
   <!-- composition start => composition update => input -->
   <!-- composition update => input -->
   <!-- composition update => input => composition end => input => change => blur -->
   <input type="text" id="input">
   <div id="div"></div>
   <script>
+    let isComposing = false;
     const input = document.getElementById('input');
     input.addEventListener('input', function (e) { 
-      if (e.isComposing) {
-        return;
-      }
+      // if (isComposing) {
+      //   return;
+      // }
       console.log('input', e);
     });
-    input.addEventListener('change', function () {
+    input.addEventListener('change', function (e) {
       /**
        * 只能点击触发
        * 1. input 元素获得焦点
@@ -43,17 +48,18 @@
        * change 跟在input 后面
       */
      return
-      console.log('change');
+      console.log('change', e);
     });
     input.addEventListener('compositionstart', function () {
+      isComposing = true;
       console.log('compositionstart');
     }, false);
     input.addEventListener('compositionupdate', function (e) {
-      console.log(e);
-      console.log('compositionupdate');
+      console.log('compositionupdate', e);
     }, false);
-    input.addEventListener('compositionend', function () {
-      console.log('compositionend');
+    input.addEventListener('compositionend', function (e) {
+      isComposing = false;
+      console.log('compositionend', e);
     }, false);
     input.addEventListener('blur', function () {
       console.log('blur');

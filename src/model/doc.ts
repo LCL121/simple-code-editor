@@ -27,11 +27,14 @@ export class Doc implements VNode {
    */
   private rect?: DOMRect;
   /**
-   * 标志是否使用输入法编辑器，
-   * 并且记录首个位置便于end 时，计算位置
+   * 记录首个位置便于end 时，计算位置
    */
   compositionStartPos?: Pos;
   compositionText = '';
+  /**
+   * 标志是否使用输入法编辑器
+   */
+  isComposing = false;
   constructor(text: string) {
     this.children = this.createLines(splitTextByEnter(text));
     this.init = true;

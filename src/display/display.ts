@@ -18,7 +18,8 @@ import {
   setClipboardContents,
   getClipboardContents,
   emitter,
-  splitTextByEnter
+  splitTextByEnter,
+  isPos
 } from '../shared/utils';
 import { KeyboardMapKeys, keyboardMapKeys, InputTypes, userAgent } from '../shared/constants';
 
@@ -131,7 +132,7 @@ export class Display {
     });
     input.ele.addEventListener('input', (event) => {
       const e = event as InputEvent;
-      if (doc.compositionStartPos) {
+      if (doc.isComposing) {
         // 排除composition 使其只通过composition 事件触发
         return;
       }
@@ -168,6 +169,25 @@ export class Display {
             doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch + 1 }));
           }
         }
+      } else if (type === 'deleteContentBackward') {
+        // 处理composition input 兼容
+        if (isPos(doc.compositionStartPos)) {
+          doc.updateDoc(
+            new Change({
+              from: doc.compositionStartPos,
+              to: doc.compositionStartPos.replace({ ch: doc.compositionStartPos.ch + doc.compositionText.length }),
+              origin: '-delete',
+              text: []
+            })
+          );
+          doc.updatePos(doc.compositionStartPos);
+          input.updatePosition(doc.compositionStartPos);
+        }
+      }
+      if (isPos(doc.compositionStartPos)) {
+        // 处理composition input 兼容
+        doc.compositionStartPos = undefined;
+        doc.compositionText = '';
       }
     });
     input.ele.addEventListener('compositionstart', (e) => {
@@ -188,21 +208,22 @@ export class Display {
       }
       doc.compositionStartPos = doc.pos;
       doc.compositionText = '';
+      doc.isComposing = true;
     });
     input.ele.addEventListener('compositionupdate', (e) => {
       e_preventDefault(e);
       const text = e.data;
       if (text) {
-        if (doc.compositionText !== text) {
+        if (doc.compositionText !== text && isPos(doc.compositionStartPos)) {
           doc.updateDoc(
             new Change({
-              from: doc.compositionStartPos!,
-              to: doc.compositionStartPos!.replace({ ch: doc.compositionStartPos!.ch + doc.compositionText.length }),
+              from: doc.compositionStartPos,
+              to: doc.compositionStartPos.replace({ ch: doc.compositionStartPos.ch + doc.compositionText.length }),
               origin: 'compose',
               text: makeArray<string>(text)
             })
           );
-          const newPos = doc.pos!.replace({ ch: doc.compositionStartPos!.ch + text.length });
+          const newPos = doc.pos!.replace({ ch: doc.compositionStartPos.ch + text.length });
           doc.updatePos(newPos);
           input.updatePosition(newPos);
           doc.compositionText = text;
@@ -211,22 +232,7 @@ export class Display {
     });
     input.ele.addEventListener('compositionend', (e) => {
       e_preventDefault(e);
-      const text = e.data;
-      if (text) {
-        doc.updateDoc(
-          new Change({
-            from: doc.compositionStartPos!,
-            to: doc.compositionStartPos!.replace({ ch: doc.compositionStartPos!.ch + doc.compositionText.length }),
-            origin: 'compose',
-            text: makeArray<string>(text)
-          })
-        );
-        const newPos = doc.pos!.replace({ ch: doc.compositionStartPos!.ch + text.length });
-        doc.updatePos(newPos);
-        input.updatePosition(newPos);
-      }
-      doc.compositionStartPos = undefined;
-      doc.compositionText = '';
+      doc.isComposing = false;
     });
     input.ele.addEventListener('keydown', (e: KeyboardEvent) => {
       keydownFn(e, doc, cursor, selected);
