@@ -1,4 +1,5 @@
 import { Pos } from '../../model/pos';
+import { shortcutMap, shortcutMapKeys } from '../constants';
 
 export function isString(s: any): s is string {
   return typeof s === 'string';
@@ -14,4 +15,8 @@ export function isNumber(n: any): n is number {
 
 export function isPos(p: any): p is Pos {
   return p instanceof Pos;
+}
+
+export function isShortcutKeyName(s: any): s is keyof typeof shortcutMap {
+  return shortcutMapKeys.includes(s);
 }

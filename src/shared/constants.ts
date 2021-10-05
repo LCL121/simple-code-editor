@@ -50,7 +50,18 @@ export const inputTypes = [
 
 export type InputTypes = typeof inputTypes[number];
 
-// userAgent
+export const shortcutKeys = ['selectedAll', 'undo'] as const;
+
+export type ShortcutKeys = typeof shortcutKeys[number];
+
+export const shortcutMap = {
+  ctrl_a: 'selectedAll' as const,
+  ctrl_z: 'undo' as const
+};
+
+export const shortcutMapKeys = Object.keys(shortcutMap);
+
+// #region userAgent
 const _userAgent = navigator.userAgent;
 const _platform = navigator.platform;
 
@@ -84,3 +95,5 @@ export const userAgent = {
   windows,
   chromeOS
 };
+
+// #endregion

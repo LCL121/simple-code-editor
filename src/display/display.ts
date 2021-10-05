@@ -19,9 +19,11 @@ import {
   getClipboardContents,
   emitter,
   splitTextByEnter,
-  isPos
+  isPos,
+  getShortcutKeyName,
+  isShortcutKeyName
 } from '../shared/utils';
-import { KeyboardMapKeys, keyboardMapKeys, InputTypes, userAgent } from '../shared/constants';
+import { KeyboardMapKeys, keyboardMapKeys, InputTypes, shortcutMap } from '../shared/constants';
 
 interface EmitterEvents {
   update: any;
@@ -593,6 +595,25 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
       newPos.surmiseInfo(doc);
       doc.updatePos(newPos);
       cursor.updatePosition(newPos);
+    }
+    return;
+  }
+
+  // 快捷键处理
+  const shortcutKeyName = getShortcutKeyName(e);
+  if (isShortcutKeyName(shortcutKeyName)) {
+    const shortcutValue = shortcutMap[shortcutKeyName];
+    if (shortcutValue === 'selectedAll') {
+      const fromPos = new Pos({ line: 0, ch: 0, sticky: 'before' });
+      const toPos = new Pos({ line: doc.getMaxLineN(), ch: doc.getLastLine().text.length, sticky: 'before' });
+      fromPos.surmiseInfo(doc);
+      toPos.surmiseInfo(doc);
+      const newSelection = new Selection(fromPos, toPos);
+
+      doc.updatePos(toPos);
+      cursor.updatePosition(toPos);
+      doc.updateSelection(newSelection);
+      selected.update(newSelection);
     }
   }
 }
