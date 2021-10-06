@@ -144,7 +144,8 @@ export class Display {
         doc.posMoveOver = false;
       }
       if (type === 'insertText') {
-        if (e.data) {
+        const text = e.data;
+        if (text && doc.pos) {
           if (doc.sel?.isValid()) {
             const { from, to } = doc.sel.sort();
             doc.updateDoc(
@@ -152,7 +153,7 @@ export class Display {
                 from,
                 to,
                 origin: 'input',
-                text: makeArray(e.data),
+                text: makeArray(text),
                 removed: makeArray(doc.getSelectedCode())
               })
             );
@@ -163,13 +164,14 @@ export class Display {
           } else {
             doc.updateDoc(
               new Change({
-                from: doc.pos!,
-                to: doc.pos!,
+                from: doc.pos,
+                // 为兼容composition input 最后data 长度大于1
+                to: doc.pos.replace({ ch: doc.pos.ch + text.length - 1 }),
                 origin: 'input',
-                text: makeArray<string>(e.data)
+                text: makeArray(text)
               })
             );
-            doc.updatePos(doc.pos!.replace({ ch: doc.pos!.ch + 1 }));
+            doc.updatePos(doc.pos.replace({ ch: doc.pos.ch + text.length }));
           }
         }
       } else if (type === 'deleteContentBackward') {
@@ -392,8 +394,12 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
         doc.updateDoc(new Change({ origin: 'redo', from: doc.pos, to: doc.pos, text: [] }));
       }
     } else if (shortcutValue === 'reTab') {
-      // TODO
-      console.log('reTab todo');
+      if (doc.pos && doc.sel) {
+        const { startPos, endPos } = doc.sel;
+        doc.updateDoc(new Change({ origin: 'reTab', from: startPos, to: endPos, text: [] }));
+        // TODO reTab
+        console.log('TODO reTab 有点难点，尤其是要考虑到undo 操作的时候');
+      }
     }
     return;
   }

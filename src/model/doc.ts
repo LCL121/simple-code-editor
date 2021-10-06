@@ -434,6 +434,8 @@ export class Doc implements VNode {
           false
         );
       }
+    } else if (origin === 'compose') {
+      // TODO
     }
   }
 

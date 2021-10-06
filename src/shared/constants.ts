@@ -9,7 +9,18 @@ export const docTopGap = 5;
 // compose 合并特殊
 export const mergeOps = ['-delete', 'delete-', 'input'] as const;
 
-export const changeOrigin = [...mergeOps, 'compose', 'cut', 'undo', 'redo', 'paste', 'drag', 'enter', 'tab'] as const;
+export const changeOrigin = [
+  ...mergeOps,
+  'compose',
+  'cut',
+  'paste',
+  'undo',
+  'redo',
+  'tab',
+  'reTab',
+  'drag',
+  'enter'
+] as const;
 
 export type ChangeOrigin = typeof changeOrigin[number];
 
