@@ -26,14 +26,14 @@ export class DocHistory {
         if (origin === '-delete') {
           const cur = this._undo[this._undo.length - 1];
           cur.to = this._doc.pos!;
-          cur.removed = [...removed!, ...cur.removed!];
+          cur.removed = [`${removed?.join('') || ''}${cur.removed?.join('') || ''}`];
         } else if (origin === 'delete-') {
           const cur = this._undo[this._undo.length - 1];
-          cur.removed = [...cur.removed!, ...removed!];
+          cur.removed = [`${cur.removed?.join('') || ''}${removed?.join('') || ''}`];
         } else if (origin === 'input') {
           const cur = this._undo[this._undo.length - 1];
           cur.to = this._doc.pos!;
-          cur.text = [...cur.text, ...text];
+          cur.text = [`${cur.text.join('')}${text.join('')}`];
         }
       } else {
         this._undo.push(c);

@@ -332,7 +332,7 @@ export class Display {
         doc.updatePos(from);
         doc.updateSelection(new Selection(from));
       } else if (doc.pos) {
-        const text = doc.getLineText(doc.pos.line);
+        const text = `\n${doc.getLineText(doc.pos.line)}\n`;
         setClipboardContents(text);
         doc.updateDoc(
           new Change({
@@ -340,7 +340,7 @@ export class Display {
             to: doc.pos,
             origin: 'cut',
             removed: [text],
-            text: [text]
+            text: []
           })
         );
         const newPos = new Pos({ line: doc.pos.line, ch: 0, sticky: 'before' });

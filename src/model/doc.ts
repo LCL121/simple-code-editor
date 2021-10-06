@@ -372,7 +372,7 @@ export class Doc implements VNode {
   reverseUpdateDocUndo(change: Change) {
     const { origin, text, removed } = change;
     if (origin === '-delete') {
-      const removedText = removed?.join('');
+      const removedText = removed?.[0];
       const { from, to } = change.sort();
       if (removedText) {
         const texts = splitTextByEnter(removedText);
