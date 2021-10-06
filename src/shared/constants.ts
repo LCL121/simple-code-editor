@@ -57,7 +57,8 @@ export const shortcutMap = {
   ctrl_a: 'selectedAll' as const,
   ctrl_z: 'undo' as const,
   ctrl_y: 'redo' as const,
-  shift_Tab: 'reTab' as const
+  shift_Tab: 'reTab' as const,
+  ctrl_s: 'save' as const
 };
 
 export const shortcutMapKeys = Object.keys(shortcutMap);

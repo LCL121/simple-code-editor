@@ -371,9 +371,9 @@ export class Doc implements VNode {
 
   reverseUpdateDocUndo(change: Change) {
     const { origin, text, removed, from: start, to: end } = change;
+    const { from, to } = change.sort();
     if (origin === '-delete') {
       const removedText = removed?.[0];
-      const { from, to } = change.sort();
       if (removedText) {
         const texts = splitTextByEnter(removedText);
         this.updatePos(to);
@@ -389,7 +389,6 @@ export class Doc implements VNode {
       }
     } else if (origin === 'delete-') {
       const removedText = removed?.[0];
-      const { from } = change.sort();
       if (removedText) {
         const texts = splitTextByEnter(removedText);
         this.updatePos(from);
@@ -404,7 +403,6 @@ export class Doc implements VNode {
         );
       }
     } else if (origin === 'input') {
-      const { from, to } = change.sort();
       if (removed) {
         // 有选区的input
         const removedText = removed[0];
@@ -413,7 +411,8 @@ export class Doc implements VNode {
           this.updateDoc(
             new Change({
               from,
-              to: from.replace({ ch: from.ch + text.length }),
+              // input 只有一个text
+              to: from.replace({ ch: from.ch + text[0].length }),
               origin: 'paste',
               text: makeArray(texts)
             }),
@@ -435,7 +434,17 @@ export class Doc implements VNode {
         );
       }
     } else if (origin === 'compose') {
-      // TODO
+      this.updateDoc(
+        new Change({
+          origin: '-delete',
+          from,
+          // compose 只有一个text
+          to: from.replace({ ch: from.ch + text[0].length }),
+          text: []
+        }),
+        false
+      );
+      this.updatePos(from);
     }
   }
 
