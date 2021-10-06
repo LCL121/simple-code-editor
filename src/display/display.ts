@@ -152,7 +152,8 @@ export class Display {
                 from,
                 to,
                 origin: 'input',
-                text: makeArray<string>(e.data)
+                text: makeArray(e.data),
+                removed: makeArray(doc.getSelectedCode())
               })
             );
             const newPos = from.replace({ ch: from.ch + 1 });
@@ -289,7 +290,7 @@ export class Display {
               new Change({
                 from: pos,
                 to: pos,
-                origin: 'input',
+                origin: 'paste',
                 text: makeArray<string>(texts)
               })
             );

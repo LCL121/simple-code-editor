@@ -370,7 +370,7 @@ export class Doc implements VNode {
   }
 
   reverseUpdateDocUndo(change: Change) {
-    const { origin, text, removed } = change;
+    const { origin, text, removed, from: start, to: end } = change;
     if (origin === '-delete') {
       const removedText = removed?.[0];
       const { from, to } = change.sort();
@@ -383,6 +383,53 @@ export class Doc implements VNode {
             from: from,
             to: from,
             text: makeArray(texts)
+          }),
+          false
+        );
+      }
+    } else if (origin === 'delete-') {
+      const removedText = removed?.[0];
+      const { from } = change.sort();
+      if (removedText) {
+        const texts = splitTextByEnter(removedText);
+        this.updatePos(from);
+        this.updateDoc(
+          new Change({
+            origin: 'paste',
+            from: from,
+            to: from,
+            text: makeArray(texts)
+          }),
+          false
+        );
+      }
+    } else if (origin === 'input') {
+      const { from, to } = change.sort();
+      if (removed) {
+        // 有选区的input
+        const removedText = removed[0];
+        if (removedText) {
+          const texts = splitTextByEnter(removedText);
+          this.updateDoc(
+            new Change({
+              from,
+              to: from.replace({ ch: from.ch + text.length }),
+              origin: 'paste',
+              text: makeArray(texts)
+            }),
+            false
+          );
+          this.updatePos(to);
+        }
+      } else {
+        this.updatePos(from);
+        this.updateDoc(
+          new Change({
+            from,
+            // 避免最后一个字符没有被删除
+            to: to.replace({ ch: to.ch + 1 }),
+            origin: '-delete',
+            text: []
           }),
           false
         );
