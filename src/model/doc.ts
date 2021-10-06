@@ -224,19 +224,25 @@ export class Doc implements VNode {
     } else if (origin === 'paste') {
       const textLen = text.length;
       const fromLineText = this.getLineText(fromLineN);
-      this.children[fromLineN].updateLine({ text: text[0], tag: 'add', ch: fromCh });
-      this.children[fromLineN].effectTag = 'update';
-      this.effect.push(this.children[fromLineN]);
-      for (let i = textLen - 1; i > 0; i--) {
-        let newLine: Line;
-        if (i === textLen - 1) {
-          newLine = this._createLine(`${text[i]}${fromLineText.substring(fromCh)}`);
-        } else {
-          newLine = this._createLine(text[i]);
+      if (textLen === 1) {
+        this.children[fromLineN].updateLine({ text: text[0], tag: 'add', ch: fromCh });
+        this.children[fromLineN].effectTag = 'update';
+        this.effect.push(this.children[fromLineN]);
+      } else {
+        this.children[fromLineN].updateLine({ tag: 'replace', text: `${fromLineText.substring(0, fromCh)}${text[0]}` });
+        this.children[fromLineN].effectTag = 'update';
+        this.effect.push(this.children[fromLineN]);
+        for (let i = textLen - 1; i > 0; i--) {
+          let newLine: Line;
+          if (i === textLen - 1) {
+            newLine = this._createLine(`${text[i]}${fromLineText.substring(fromCh)}`);
+          } else {
+            newLine = this._createLine(text[i]);
+          }
+          newLine.effectTag = 'add';
+          this.pushLine(newLine, fromLineN + 1);
+          this.effect.push(newLine);
         }
-        newLine.effectTag = 'add';
-        this.pushLine(newLine, fromLineN + 1);
-        this.effect.push(newLine);
       }
     } else if (origin === 'cut') {
       if (fromLineN === this.getMaxLineN()) {
@@ -301,8 +307,8 @@ export class Doc implements VNode {
       const textLen = text.length;
       const fromLineText = this.getLineText(fromLineN);
 
-      // len === 1 特殊处理
-      if (textLen === changeLine && textLen === 1) {
+      // len === 1 && change === 1 特殊处理
+      if (changeLine === 1 && textLen === 1) {
         this.children[fromLineN].updateLine({
           tag: 'replace',
           text: `${fromLineText.substring(0, fromCh)}${text}${fromLineText.substring(toCh)}`
@@ -344,7 +350,7 @@ export class Doc implements VNode {
         for (let i = textLen - 1; i >= minLen; i--) {
           const newLine = this._createLine(text[i]);
           newLine.effectTag = 'add';
-          this.pushLine(newLine, minLen);
+          this.pushLine(newLine, minLen + fromLineN);
           this.effect.push(newLine);
         }
       }

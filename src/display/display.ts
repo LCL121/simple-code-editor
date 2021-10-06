@@ -72,6 +72,7 @@ export class Display {
           gutters.updateGutters(doc.getLinesNum());
         } else if (line.effectTag === 'add') {
           line.ele = createVNodeElement(line);
+          // insertBefore 若next 为空，会将指定的节点添加到指定父节点的子节点列表的末尾
           line.parent?.ele?.insertBefore(line.ele, line.nextSibling?.ele!);
           gutters.updateGutters(doc.getLinesNum());
         }
@@ -251,9 +252,9 @@ export class Display {
     input.ele.addEventListener('paste', async (e) => {
       e_preventDefault(e);
       const text = await getClipboardContents();
-      if (text && doc.sel) {
+      if (text) {
         const texts = splitTextByEnter(text);
-        if (doc.sel.isValid()) {
+        if (doc.sel?.isValid()) {
           const { from, to } = doc.sel.sort();
           doc.updateDoc(
             new Change({
@@ -264,7 +265,7 @@ export class Display {
             })
           );
           let newPos: Pos;
-          if (to.line - from.line + 1 === texts.length && texts.length === 1) {
+          if (texts.length === 1) {
             newPos = new Pos({
               line: from.line,
               ch: from.getPosChBySticky() + texts[0].length,
@@ -654,6 +655,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
        */
       newPos.surmiseInfo(doc);
       doc.updatePos(newPos);
+      selected.hidden();
       cursor.updatePosition(newPos);
     }
     return;
