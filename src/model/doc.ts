@@ -371,7 +371,7 @@ export class Doc implements VNode {
 
   reverseUpdateDocUndo(change: Change) {
     const { origin, text, removed, from: start, to: end } = change;
-    const { from, to } = change.sort();
+    const { from, to, equal } = change.sort();
     if (origin === '-delete') {
       const removedText = removed?.[0];
       if (removedText) {
@@ -445,6 +445,78 @@ export class Doc implements VNode {
         false
       );
       this.updatePos(from);
+    } else if (origin === 'enter') {
+      const newPos = new Pos({
+        line: from.line + 1,
+        ch: 0,
+        sticky: 'before'
+      });
+      if (equal) {
+        this.updateDoc(
+          new Change({
+            from: newPos,
+            to: newPos,
+            origin: '-delete',
+            text: []
+          }),
+          false
+        );
+        this.updatePos(from);
+      } else {
+        if (removed) {
+          this.updateDoc(
+            new Change({
+              from,
+              to: newPos,
+              origin: 'paste',
+              text: makeArray(splitTextByEnter(removed[0]))
+            }),
+            false
+          );
+          this.updatePos(end);
+        }
+      }
+    } else if (origin === 'paste') {
+      // TODO
+      console.log('todo paste undo');
+    } else if (origin === 'cut') {
+      if (removed) {
+        const texts = makeArray(splitTextByEnter(removed[0]));
+        if (equal) {
+          const newPos = new Pos({
+            line: from.line,
+            ch: 0,
+            sticky: 'before'
+          });
+          this.updateDoc(
+            new Change({
+              from: newPos,
+              to: newPos,
+              origin: 'paste',
+              text: texts
+            }),
+            false
+          );
+          this.updatePos(from);
+        } else {
+          this.updateDoc(
+            new Change({
+              from,
+              to: from,
+              origin: 'paste',
+              text: texts
+            }),
+            false
+          );
+          this.updatePos(end);
+        }
+      }
+    } else if (origin === 'tab') {
+      // TODO
+      console.log('todo tab undo');
+    } else if (origin === 'reTab') {
+      // TODO
+      console.log('todo reTab undo');
     }
   }
 

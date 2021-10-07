@@ -249,7 +249,7 @@ export class Display {
       if (doc.sel?.isValid()) {
         setClipboardContents(doc.getSelectedCode());
       } else if (doc.pos) {
-        setClipboardContents(doc.getLineText(doc.pos.line));
+        setClipboardContents(`${doc.getLineText(doc.pos.line)}\n`);
       }
     });
     input.ele.addEventListener('paste', async (e) => {
@@ -335,7 +335,7 @@ export class Display {
         doc.updatePos(from);
         doc.updateSelection(new Selection(from));
       } else if (doc.pos) {
-        const text = `\n${doc.getLineText(doc.pos.line)}\n`;
+        const text = `${doc.getLineText(doc.pos.line)}\n`;
         setClipboardContents(text);
         doc.updateDoc(
           new Change({
@@ -583,6 +583,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
                 from,
                 to,
                 origin: 'enter',
+                removed: makeArray(doc.getSelectedCode()),
                 text: []
               })
             );
