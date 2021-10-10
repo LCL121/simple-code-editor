@@ -306,30 +306,35 @@ export class Doc implements VNode {
       const changeLine = toLineN - fromLineN + 1;
       const textLen = text.length;
       const fromLineText = this.getLineText(fromLineN);
+      const toLineText = this.getLineText(toLineN);
 
-      // len === 1 && change === 1 特殊处理
-      if (changeLine === 1 && textLen === 1) {
+      // textLen === 1 特殊处理
+      if (textLen === 1) {
         this.children[fromLineN].updateLine({
           tag: 'replace',
-          text: `${fromLineText.substring(0, fromCh)}${text}${fromLineText.substring(toCh)}`
+          text: `${fromLineText.substring(0, fromCh)}${text}${toLineText.substring(toCh)}`
         });
         this.children[fromLineN].effectTag = 'update';
         this.effect.push(this.children[fromLineN]);
+
+        for (let i = fromLineN + 1; i <= toLineN; i++) {
+          this.children[i].effectTag = 'delete';
+          this.effect.push(this.children[i]);
+        }
         return;
       }
 
-      const toLineText = this.getLineText(toLineN);
       const minLen = Math.min(changeLine, textLen);
 
       for (let i = 0; i < minLen; i++) {
         const curText = text[i];
         const curLineN = i + fromLineN;
-        if (curLineN === fromLineN) {
+        if (i === 0) {
           this.children[curLineN].updateLine({
             tag: 'replace',
             text: `${fromLineText.substring(0, fromCh)}${curText}`
           });
-        } else if (curLineN === minLen - 1 + fromLineN) {
+        } else if (i === minLen - 1) {
           this.children[curLineN].updateLine({
             tag: 'replace',
             text: `${curText}${toLineText.substring(toCh)}`

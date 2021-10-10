@@ -264,6 +264,7 @@ export class Display {
               from,
               to,
               origin: 'paste',
+              removed: makeArray(doc.getSelectedCode()),
               text: makeArray<string>(texts)
             })
           );
