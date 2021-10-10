@@ -395,11 +395,61 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
         doc.updateDoc(new Change({ origin: 'redo', from: doc.pos, to: doc.pos, text: [] }));
       }
     } else if (shortcutValue === 'reTab') {
-      if (doc.pos && doc.sel) {
-        const { startPos, endPos } = doc.sel;
-        doc.updateDoc(new Change({ origin: 'reTab', from: startPos, to: endPos, text: [] }));
-        // TODO reTab
-        console.log('TODO reTab 有点难点，尤其是要考虑到undo 操作的时候');
+      if (doc.pos) {
+        const pos = doc.pos;
+        const lineN = pos.line;
+        if (doc.sel?.isValid()) {
+          const { from, to } = doc.sel.sort();
+          const fromLineN = from.line;
+          const toLineN = to.line;
+          const removed: string[] = [];
+          let posLineStartWith = '';
+          let fromLineStartWith = '';
+          let toLineStartWith = '';
+          for (let i = fromLineN; i <= toLineN; i++) {
+            const startWith = doc.getLine(i).reTabString();
+            if (lineN === i) {
+              posLineStartWith = startWith;
+            }
+            if (fromLineN === i) {
+              fromLineStartWith = startWith;
+            } else if (toLineN === i) {
+              toLineStartWith = startWith;
+            }
+            removed.push(startWith);
+          }
+          doc.updateDoc(
+            new Change({
+              from,
+              to,
+              origin: 'reTab',
+              removed,
+              text: []
+            })
+          );
+          if (posLineStartWith !== '') {
+            doc.updatePos(pos.replace({ ch: pos.ch - posLineStartWith.length }));
+          }
+          if (fromLineStartWith !== '' || toLineStartWith !== '') {
+            const newFromPos = from.replace({ ch: from.ch - fromLineStartWith.length });
+            const newToPos = to.replace({ ch: to.ch - toLineStartWith.length });
+            doc.updateSelection(new Selection(newFromPos, newToPos));
+          }
+        } else {
+          const startWith = doc.getLine(lineN).reTabString();
+          if (startWith !== '') {
+            doc.updateDoc(
+              new Change({
+                from: pos,
+                to: pos,
+                origin: 'reTab',
+                removed: makeArray(startWith),
+                text: []
+              })
+            );
+            doc.updatePos(pos.replace({ ch: pos.ch - startWith.length }));
+          }
+        }
       }
     }
     return;

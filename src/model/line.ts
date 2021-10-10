@@ -43,4 +43,14 @@ export class Line implements VNode {
     this.text = newText;
     this.children = newText;
   }
+
+  reTabString() {
+    if (this.text.startsWith('  ')) {
+      return '  ';
+    } else if (this.text.startsWith(' ')) {
+      return ' ';
+    } else {
+      return '';
+    }
+  }
 }

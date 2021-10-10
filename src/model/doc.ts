@@ -160,7 +160,7 @@ export class Doc implements VNode {
   }
 
   private _updateDocEqualPos(change: Change) {
-    const { from, to, origin, text } = change;
+    const { from, to, origin, text, removed } = change;
     const fromCh = judgeChBySticky(from.ch, from.sticky);
     const fromLineN = from.line;
     const toLineN = to.line;
@@ -253,11 +253,23 @@ export class Doc implements VNode {
         this.children[fromLineN].effectTag = 'delete';
         this.effect.push(this.children[fromLineN]);
       }
+    } else if (origin === 'reTab') {
+      if (removed) {
+        const removedStartLen = removed[0].length;
+        if (removedStartLen > 0) {
+          this.children[fromLineN].updateLine({
+            tag: 'replace',
+            text: this.getLineText(fromLineN).substring(removedStartLen)
+          });
+          this.children[fromLineN].effectTag = 'update';
+          this.effect.push(this.children[fromLineN]);
+        }
+      }
     }
   }
 
   private _updateDocUnequalPos(change: Change) {
-    const { from, to, origin, text } = change;
+    const { from, to, origin, text, removed } = change;
     const fromCh = judgeChBySticky(from.ch, from.sticky);
     const fromLineN = from.line;
     const toCh = judgeChBySticky(to.ch, to.sticky);
@@ -357,6 +369,21 @@ export class Doc implements VNode {
           newLine.effectTag = 'add';
           this.pushLine(newLine, minLen + fromLineN);
           this.effect.push(newLine);
+        }
+      }
+    } else if (origin === 'reTab') {
+      if (removed) {
+        for (let i = 0; i < removed.length; i++) {
+          const curLineN = fromLineN + i;
+          if (removed[i] !== '') {
+            const removedStartLen = removed[i].length;
+            this.children[curLineN].updateLine({
+              tag: 'replace',
+              text: this.getLineText(curLineN).substring(removedStartLen)
+            });
+            this.children[curLineN].effectTag = 'update';
+            this.effect.push(this.children[curLineN]);
+          }
         }
       }
     }
