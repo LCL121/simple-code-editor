@@ -1,7 +1,7 @@
 import { Line } from './line';
 import { Pos, judgeChBySticky } from './pos';
 import { Effect } from './effect';
-import { Change } from './change';
+import { Change, HistoryChange } from './change';
 import { Selection } from './selection';
 import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
@@ -423,8 +423,8 @@ export class Doc implements VNode {
     }
   }
 
-  reverseUpdateDocUndo(change: Change) {
-    const { origin, text, removed, from: start, to: end } = change;
+  reverseUpdateDocUndo(change: HistoryChange) {
+    const { origin, text, removed, from: start, to: end, isSel } = change;
     const { from, to, equal } = change.sort();
     if (origin === '-delete') {
       const removedText = removed?.[0];
@@ -440,6 +440,9 @@ export class Doc implements VNode {
           }),
           false
         );
+        if (isSel) {
+          this.updateSelection(new Selection(start, end));
+        }
       }
     } else if (origin === 'delete-') {
       const removedText = removed?.[0];
@@ -455,6 +458,9 @@ export class Doc implements VNode {
           }),
           false
         );
+        if (isSel) {
+          this.updateSelection(new Selection(start, end));
+        }
       }
     } else if (origin === 'input') {
       if (removed) {
@@ -473,6 +479,7 @@ export class Doc implements VNode {
             false
           );
           this.updatePos(to);
+          this.updateSelection(new Selection(start, end));
         }
       } else {
         this.updatePos(from);
@@ -528,6 +535,7 @@ export class Doc implements VNode {
             false
           );
           this.updatePos(end);
+          this.updateSelection(new Selection(start, end));
         }
       }
     } else if (origin === 'paste') {
@@ -592,6 +600,7 @@ export class Doc implements VNode {
             false
           );
           this.updatePos(end);
+          this.updateSelection(new Selection(start, end));
         }
       }
     } else if (origin === 'tab') {

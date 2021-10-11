@@ -1,10 +1,11 @@
 import { ChangeOrigin, mergeOps } from '../shared/constants';
-import { Change } from './change';
+import { makeArray } from '../shared/utils';
+import { Change, HistoryChange } from './change';
 import { Doc } from './doc';
 
 export class DocHistory {
-  private readonly _undo: Change[] = [];
-  private readonly _redo: Change[] = [];
+  private readonly _undo: HistoryChange[] = [];
+  private readonly _redo: HistoryChange[] = [];
   private readonly _doc: Doc;
   private _isSel: boolean = false; // 标记前一次操作是否选区操作
   private _op?: ChangeOrigin; // 标记前一次操作符
@@ -19,29 +20,44 @@ export class DocHistory {
   private _pushUndo(c: Change) {
     const { origin, from, to, text, removed } = c;
     if (this._op === origin && origin === 'compose') {
-      this._undo[this._undo.length - 1] = c;
+      this._undo[this._undo.length - 1] = c.toHistoryChange();
       this._isSel = false;
     } else if (from.equalCursorPos(to)) {
       if (this._op === origin && mergeOps.includes(origin as any) && this._isSel === false) {
         if (origin === '-delete') {
-          const cur = this._undo[this._undo.length - 1];
-          cur.to = this._doc.pos!;
-          cur.removed = [`${removed?.join('') || ''}${cur.removed?.join('') || ''}`];
+          const cur = this._undo.pop();
+          if (cur) {
+            const newChange = cur.replace({
+              to: this._doc.pos,
+              removed: makeArray(`${removed?.join('') || ''}${cur.removed?.join('') || ''}`)
+            });
+            this._undo.push(newChange);
+          }
         } else if (origin === 'delete-') {
-          const cur = this._undo[this._undo.length - 1];
-          cur.removed = [`${cur.removed?.join('') || ''}${removed?.join('') || ''}`];
+          const cur = this._undo.pop();
+          if (cur) {
+            const newChange = cur.replace({
+              removed: makeArray(`${cur.removed?.join('') || ''}${removed?.join('') || ''}`)
+            });
+            this._undo.push(newChange);
+          }
         } else if (origin === 'input') {
-          const cur = this._undo[this._undo.length - 1];
-          cur.to = this._doc.pos!;
-          cur.text = [`${cur.text.join('')}${text.join('')}`];
+          const cur = this._undo.pop();
+          if (cur) {
+            const newChange = cur.replace({
+              to: this._doc.pos,
+              text: makeArray(`${cur.text.join('')}${text.join('')}`)
+            });
+            this._undo.push(newChange);
+          }
         }
       } else {
-        this._undo.push(c);
+        this._undo.push(c.toHistoryChange());
       }
       this._isSel = false;
     } else {
       this._isSel = true;
-      this._undo.push(c);
+      this._undo.push(c.toHistoryChange(true));
     }
     this._op = origin;
   }
