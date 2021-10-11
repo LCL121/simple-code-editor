@@ -337,6 +337,25 @@ export class Doc implements VNode {
         return;
       }
 
+      // changeLine === 1 特殊处理
+      if (changeLine === 1) {
+        this.children[fromLineN].updateLine({
+          tag: 'replace',
+          text: `${fromLineText.substring(0, fromCh)}${text[0]}`
+        });
+        this.children[fromLineN].effectTag = 'update';
+        this.effect.push(this.children[fromLineN]);
+
+        for (let i = textLen - 1; i > 0; i--) {
+          const curText = textLen - 1 === i ? `${text[i]}${toLineText.substring(toCh)}` : text[i];
+          const newLine = this._createLine(curText);
+          newLine.effectTag = 'add';
+          this.pushLine(newLine, fromLineN + 1);
+          this.effect.push(newLine);
+        }
+        return;
+      }
+
       const minLen = Math.min(changeLine, textLen);
 
       for (let i = 0; i < minLen; i++) {
@@ -394,6 +413,8 @@ export class Doc implements VNode {
     if (isPush) {
       console.log(change);
       this.history.push(change);
+    } else {
+      console.log(false, change);
     }
     if (change.from.equalCursorPos(change.to)) {
       this._updateDocEqualPos(change);
@@ -510,8 +531,37 @@ export class Doc implements VNode {
         }
       }
     } else if (origin === 'paste') {
-      // TODO
-      console.log('todo paste undo');
+      let newToPos: Pos;
+      if (text.length > 1) {
+        newToPos = new Pos({ line: from.line + text.length - 1, ch: text[text.length - 1].length, sticky: 'before' });
+      } else {
+        newToPos = from.replace({ ch: from.ch + text[0].length });
+      }
+      // removed === undefined => 无选区
+      if (removed) {
+        this.updateDoc(
+          new Change({
+            origin: 'paste',
+            from,
+            to: newToPos,
+            text: splitTextByEnter(removed[0])
+          }),
+          false
+        );
+        this.updatePos(end);
+        this.updateSelection(new Selection(start, end));
+      } else {
+        this.updateDoc(
+          new Change({
+            origin: 'delete-',
+            from,
+            to: newToPos,
+            text: []
+          }),
+          false
+        );
+        this.updatePos(from);
+      }
     } else if (origin === 'cut') {
       if (removed) {
         const texts = makeArray(splitTextByEnter(removed[0]));
