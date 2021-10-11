@@ -679,7 +679,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
                 from,
                 to,
                 origin: 'tab',
-                text: []
+                text: makeArray(Array(to.line - from.line + 1).fill('  '))
               })
             );
             const { startPos, endPos } = doc.sel;
@@ -701,7 +701,7 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
                 from: currentPosTab!,
                 to: currentPosTab!,
                 origin: 'tab',
-                text: []
+                text: ['  ']
               })
             );
           }

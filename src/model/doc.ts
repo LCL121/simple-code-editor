@@ -304,10 +304,11 @@ export class Doc implements VNode {
         this.effect.push(this.children[i]);
       }
     } else if (origin === 'tab') {
-      for (let i = fromLineN; i <= toLineN; i++) {
-        this.children[i].updateLine({ tag: 'add', text: '  ', ch: 0 });
-        this.children[i].effectTag = 'update';
-        this.effect.push(this.children[i]);
+      for (let i = 0; i < text.length; i++) {
+        const curLineN = fromLineN + i;
+        this.children[curLineN].updateLine({ tag: 'add', text: text[i], ch: 0 });
+        this.children[curLineN].effectTag = 'update';
+        this.effect.push(this.children[curLineN]);
       }
     } else if (origin === 'paste' || origin === 'input' || origin === 'compose') {
       /**
@@ -544,11 +545,44 @@ export class Doc implements VNode {
         }
       }
     } else if (origin === 'tab') {
-      // TODO
-      console.log('todo tab undo');
+      if (start.equalCursorPos(end)) {
+        this.updateDoc(
+          new Change({
+            origin: 'delete-',
+            from: start,
+            to: end.replace({ ch: end.ch + 2 }),
+            text: [],
+            removed: text
+          }),
+          false
+        );
+      } else {
+        this.updateDoc(new Change({ origin: 'reTab', from: start, to: end, text: [], removed: text }), false);
+        this.updateSelection(new Selection(start, end));
+      }
+      this.updatePos(end);
     } else if (origin === 'reTab') {
-      // TODO
-      console.log('todo reTab undo');
+      if (removed) {
+        let fromPos: Pos = start;
+        let toPos: Pos = end;
+        if (start.equalCursorPos(end)) {
+          const startCh = start.getPosChBySticky() - 2;
+          const endCh = end.getPosChBySticky() - 2;
+          fromPos = new Pos({ ch: startCh < 0 ? 0 : startCh, sticky: 'before', line: start.line });
+          toPos = new Pos({ ch: endCh < 0 ? 0 : endCh, sticky: 'before', line: end.line });
+        }
+        this.updateDoc(
+          new Change({
+            origin: 'tab',
+            from: fromPos,
+            to: toPos,
+            text: removed
+          }),
+          false
+        );
+        this.updatePos(toPos);
+        this.updateSelection(new Selection(fromPos, toPos));
+      }
     }
   }
 
