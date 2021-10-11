@@ -1,10 +1,11 @@
 import { classPrefix } from '../shared/constants';
 
 export class Gutters {
-  lineNum: number;
-  ele: HTMLDivElement;
+  private _lineNum: number;
+  readonly ele: HTMLDivElement;
+
   constructor(lineNum: number) {
-    this.lineNum = lineNum;
+    this._lineNum = lineNum;
     const gutters = document.createElement('div');
     gutters.setAttribute('class', `${classPrefix}_gutters`);
     gutters.append(this._createGutters(lineNum));
@@ -27,7 +28,7 @@ export class Gutters {
   }
 
   updateGutters(lineNum: number) {
-    let num = this.lineNum - lineNum;
+    let num = this._lineNum - lineNum;
     if (num > 0) {
       while (num > 0) {
         this.ele.lastChild?.remove();
@@ -35,11 +36,11 @@ export class Gutters {
       }
     } else if (num < 0) {
       const fragment = document.createDocumentFragment();
-      for (let i = this.lineNum + 1; i <= lineNum; i++) {
+      for (let i = this._lineNum + 1; i <= lineNum; i++) {
         fragment.appendChild(this._createGutter(i));
       }
       this.ele.append(fragment);
     }
-    this.lineNum = lineNum;
+    this._lineNum = lineNum;
   }
 }

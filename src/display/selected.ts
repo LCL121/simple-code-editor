@@ -6,8 +6,9 @@ const focusClass = `${classPrefix}_selected_item ${classPrefix}_selected_item_fo
 const unFocusClass = `${classPrefix}_selected_item`;
 
 export class Selected {
-  ele: HTMLDivElement;
-  private _selectedItem = new Map<number, HTMLDivElement>();
+  readonly ele: HTMLDivElement;
+  private readonly _selectedItem = new Map<number, HTMLDivElement>();
+
   constructor() {
     const selected = document.createElement('div');
     selected.setAttribute('class', `${classPrefix}_selected`);

@@ -1,10 +1,10 @@
 export interface VNode {
-  tag: string;
-  parent: ParentVNode;
-  children: ChildeVNode;
-  nextSibling: NextSiblingVNode;
+  readonly tag: string;
+  readonly parent: ParentVNode;
+  readonly children: ChildeVNode;
+  readonly nextSibling: NextSiblingVNode;
+  readonly attrs: VNodeAttrs;
   ele: VNodeEle;
-  attrs: VNodeAttrs;
 }
 
 export type ParentVNode = VNode | undefined;

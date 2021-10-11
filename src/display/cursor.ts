@@ -2,7 +2,8 @@ import { Pos } from '../model/pos';
 import { classPrefix } from '../shared/constants';
 
 export class Cursor {
-  ele: HTMLDivElement;
+  readonly ele: HTMLDivElement;
+
   constructor() {
     const div = document.createElement('div');
     div.setAttribute('class', `${classPrefix}_cursor`);

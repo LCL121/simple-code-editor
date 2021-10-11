@@ -2,16 +2,24 @@ import { Doc } from './doc';
 import { Pos, surmiseInfoFromPos, sortTwoPos } from './pos';
 
 export class Selection {
-  startPos: Pos;
-  endPos: Pos;
+  private _startPos: Pos;
+  private _endPos: Pos;
 
   constructor(startPos: Pos, endPos: Pos = startPos) {
-    this.startPos = startPos;
-    this.endPos = endPos;
+    this._startPos = startPos;
+    this._endPos = endPos;
+  }
+
+  get startPos() {
+    return this._startPos;
+  }
+
+  get endPos() {
+    return this._endPos;
   }
 
   updateEndPos(pos: Pos) {
-    this.endPos = pos;
+    this._endPos = pos;
   }
 
   /**

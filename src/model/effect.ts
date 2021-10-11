@@ -1,7 +1,7 @@
 import { emitterEmitUpdate } from '../display/display';
 
 export class Effect<T> {
-  private _queue: T[] = [];
+  private readonly _queue: T[] = [];
   private _timer: number | null = null;
 
   push(i: T) {

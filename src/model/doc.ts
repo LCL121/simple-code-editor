@@ -13,9 +13,9 @@ export class Doc implements VNode {
   children: Line[];
   nextSibling: NextSiblingVNode = undefined;
   ele: HTMLElement | undefined;
-  init: boolean;
   tag = 'pre';
   attrs: VNodeAttrs = [{ name: 'class', value: `${classPrefix}_doc` }];
+  init: boolean;
   effect = new Effect<Line>();
   lineHeight = lineHeight;
   mouseDown = false;

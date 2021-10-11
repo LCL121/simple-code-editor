@@ -10,17 +10,21 @@ interface PosOptions {
 }
 
 export class Pos {
-  line: number;
-  ch: number;
-  sticky: PosSticky;
-  position: Point;
+  readonly line: number;
+  readonly ch: number;
+  readonly sticky: PosSticky;
+  private _position: Point;
 
   constructor(options: PosOptions) {
     const { line, ch, sticky = null, position = { x: 0, y: 0 } } = options;
     this.line = line;
     this.ch = ch;
     this.sticky = sticky;
-    this.position = position;
+    this._position = position;
+  }
+
+  get position() {
+    return this._position;
   }
 
   copy() {
@@ -29,17 +33,11 @@ export class Pos {
 
   replace(options: Partial<Omit<PosOptions, 'position'>>) {
     const { line, ch, sticky } = options;
-    const newPos = this.copy();
-    if (isNumber(line)) {
-      newPos.line = line;
-    }
-    if (isNumber(ch)) {
-      newPos.ch = ch;
-    }
-    if (sticky) {
-      newPos.sticky = sticky;
-    }
-    return newPos;
+    return new Pos({
+      line: line || this.line,
+      ch: ch || this.ch,
+      sticky: sticky || this.sticky
+    });
   }
 
   /**
@@ -61,7 +59,7 @@ export class Pos {
   }
 
   setPosition(position: Point) {
-    this.position = position;
+    this._position = position;
   }
 
   getPosChBySticky() {

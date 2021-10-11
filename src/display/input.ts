@@ -2,7 +2,8 @@ import { Pos } from '../model/pos';
 import { classPrefix, lineHeight } from '../shared/constants';
 
 export class Input {
-  ele: HTMLTextAreaElement;
+  readonly ele: HTMLTextAreaElement;
+
   constructor() {
     const textarea = document.createElement('textarea');
     textarea.setAttribute('class', `${classPrefix}_textarea`);

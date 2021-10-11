@@ -11,12 +11,13 @@ interface SimpleCodeEditorOptions {
 }
 
 class SimpleCodeEditor {
-  doc: Doc;
-  input: Input;
-  cursor: Cursor;
-  gutters: Gutters;
-  wrapper: Wrapper;
-  selected: Selected;
+  readonly doc: Doc;
+  readonly input: Input;
+  readonly cursor: Cursor;
+  readonly gutters: Gutters;
+  readonly wrapper: Wrapper;
+  readonly selected: Selected;
+
   constructor(options: SimpleCodeEditorOptions) {
     const { value } = options;
     this.doc = new Doc(value);
