@@ -337,57 +337,52 @@ export class Doc implements VNode {
         return;
       }
 
-      // changeLine === 1 特殊处理
-      if (changeLine === 1) {
-        this.children[fromLineN].updateLine({
-          tag: 'replace',
-          text: `${fromLineText.substring(0, fromCh)}${text[0]}`
-        });
-        this.children[fromLineN].effectTag = 'update';
-        this.effect.push(this.children[fromLineN]);
-
-        for (let i = textLen - 1; i > 0; i--) {
-          const curText = textLen - 1 === i ? `${text[i]}${toLineText.substring(toCh)}` : text[i];
-          const newLine = this._createLine(curText);
-          newLine.effectTag = 'add';
-          this.pushLine(newLine, fromLineN + 1);
-          this.effect.push(newLine);
+      if (changeLine >= textLen) {
+        for (let i = 0; i < textLen; i++) {
+          const curText = text[i];
+          const curLineN = i + fromLineN;
+          if (i === 0) {
+            this.children[curLineN].updateLine({
+              tag: 'replace',
+              text: `${fromLineText.substring(0, fromCh)}${curText}`
+            });
+          } else if (i === textLen - 1) {
+            this.children[curLineN].updateLine({
+              tag: 'replace',
+              text: `${curText}${toLineText.substring(toCh)}`
+            });
+          } else {
+            this.children[curLineN].updateLine({ tag: 'replace', text: curText });
+          }
+          this.children[curLineN].effectTag = 'update';
+          this.effect.push(this.children[curLineN]);
         }
-        return;
       }
-
-      const minLen = Math.min(changeLine, textLen);
-
-      for (let i = 0; i < minLen; i++) {
-        const curText = text[i];
-        const curLineN = i + fromLineN;
-        if (i === 0) {
-          this.children[curLineN].updateLine({
-            tag: 'replace',
-            text: `${fromLineText.substring(0, fromCh)}${curText}`
-          });
-        } else if (i === minLen - 1) {
-          this.children[curLineN].updateLine({
-            tag: 'replace',
-            text: `${curText}${toLineText.substring(toCh)}`
-          });
-        } else {
-          this.children[curLineN].updateLine({ tag: 'replace', text: curText });
-        }
-        this.children[curLineN].effectTag = 'update';
-        this.effect.push(this.children[curLineN]);
-      }
-
-      if (textLen < changeLine) {
-        for (let i = minLen + fromLineN; i <= toLineN; i++) {
+      if (changeLine > textLen) {
+        for (let i = textLen + fromLineN; i <= toLineN; i++) {
           this.children[i].effectTag = 'delete';
           this.effect.push(this.children[i]);
         }
-      } else if (textLen > changeLine) {
-        for (let i = textLen - 1; i >= minLen; i--) {
-          const newLine = this._createLine(text[i]);
+      } else if (changeLine < textLen) {
+        for (let i = 0; i < changeLine; i++) {
+          const curText = text[i];
+          const curLineN = i + fromLineN;
+          if (i === 0) {
+            this.children[curLineN].updateLine({
+              tag: 'replace',
+              text: `${fromLineText.substring(0, fromCh)}${curText}`
+            });
+          } else {
+            this.children[curLineN].updateLine({ tag: 'replace', text: curText });
+          }
+          this.children[curLineN].effectTag = 'update';
+          this.effect.push(this.children[curLineN]);
+        }
+        for (let i = textLen - 1; i >= changeLine; i--) {
+          const curText = textLen - 1 === i ? `${text[i]}${toLineText.substring(toCh)}` : text[i];
+          const newLine = this._createLine(curText);
           newLine.effectTag = 'add';
-          this.pushLine(newLine, minLen + fromLineN);
+          this.pushLine(newLine, changeLine + fromLineN);
           this.effect.push(newLine);
         }
       }
