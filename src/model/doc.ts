@@ -3,7 +3,7 @@ import { Pos, judgeChBySticky } from './pos';
 import { Effect } from './effect';
 import { Change, HistoryChange } from './change';
 import { Selection } from './selection';
-import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap } from '../shared/type';
+import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap, Rect } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
 import { makeArray, splitTextByEnter } from '../shared/utils';
 import { DocHistory } from './history';
@@ -26,7 +26,7 @@ export class Doc implements VNode {
   /**
    * 用于记录doc rect，避免每次get 都进行reflow
    */
-  private _rect?: DOMRect;
+  private _rect?: Rect;
   /**
    * 记录首个位置便于end 时，计算位置
    */
@@ -42,6 +42,10 @@ export class Doc implements VNode {
     this.children = this._createLines(splitTextByEnter(text));
     this.init = true;
     this.history = new DocHistory(this);
+  }
+
+  get rect() {
+    return this._rect;
   }
 
   private _createLines(linesText: string[]) {
@@ -92,11 +96,15 @@ export class Doc implements VNode {
   }
 
   updateDocRect() {
-    this._rect = this.ele?.getBoundingClientRect();
-  }
-
-  getDocRect() {
-    return this._rect;
+    const rect = this.ele?.getBoundingClientRect();
+    if (rect) {
+      this._rect = {
+        height: this.ele?.clientHeight || rect.height,
+        width: this.ele?.clientWidth || rect.width,
+        x: rect.x,
+        y: rect.y
+      };
+    }
   }
 
   getLinesNum() {

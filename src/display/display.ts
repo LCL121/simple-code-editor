@@ -5,6 +5,7 @@ import { Input } from './input';
 import { Cursor } from './cursor';
 import { Gutters } from './gutters';
 import { Selected } from './selected';
+import { Wrapper } from './wrapper';
 import { PosSticky, VNode } from '../shared/type';
 import { posFromMouse, Pos, isPos } from '../model/pos';
 import { Selection } from '../model/selection';
@@ -44,7 +45,7 @@ export class Display {
       container.appendChild(wrapper.ele);
       doc.init = false;
 
-      Display._addEventListener(doc, input, cursor, selected);
+      Display._addEventListener(editor);
 
       emitterInstance.on('update', () => {
         Display._update(doc, cursor, gutters, selected);
@@ -90,13 +91,16 @@ export class Display {
     }
   }
 
-  private static _addEventListener(doc: Doc, input: Input, cursor: Cursor, selected: Selected) {
+  private static _addEventListener(editor: SimpleCodeEditor) {
+    const { doc, input, cursor, selected } = editor;
+
+    // doc 监听事件
     doc.ele?.addEventListener('mousedown', (e) => {
       e_preventDefault(e);
       selected.hidden();
       doc.posMoveOver = false;
       doc.mouseDown = true;
-      const pos = posFromMouse(doc, e);
+      const pos = posFromMouse(e, doc, editor);
       doc.updateSelection(new Selection(pos));
       doc.updatePos(pos);
       if (activeElt() === document.body) {
@@ -108,7 +112,7 @@ export class Display {
     doc.ele?.addEventListener('mousemove', (e) => {
       requestAnimationFrame(() => {
         if (doc.mouseDown) {
-          const pos = posFromMouse(doc, e);
+          const pos = posFromMouse(e, doc, editor);
           doc.sel?.updateEndPos(pos);
           doc.updatePos(pos);
           cursor.updatePosition(pos);
@@ -118,12 +122,14 @@ export class Display {
     });
     doc.ele?.addEventListener('mouseup', (e) => {
       doc.mouseDown = false;
-      const pos = posFromMouse(doc, e);
+      const pos = posFromMouse(e, doc, editor);
       doc.sel?.updateEndPos(pos);
       doc.updatePos(pos);
       cursor.updatePosition(pos);
       emitterEmitUpdate();
     });
+
+    // input 监听事件
     input.ele.addEventListener('blur', () => {
       cursor.hidden();
       selected.blur();

@@ -1,6 +1,7 @@
 import { PosSticky, Point, PosMapCh, PosMapLine } from '../shared/type';
 import { Doc } from './doc';
 import { range, isString, isUndefined } from '../shared/utils';
+import SimpleCodeEditor from '../simpleCodeEditor';
 
 interface PosOptions {
   line: number;
@@ -100,10 +101,10 @@ export class Pos {
   }
 }
 
-export function posFromMouse(doc: Doc, e: MouseEvent) {
-  const docRect = doc.getDocRect();
+export function posFromMouse(e: MouseEvent, doc: Doc, editor: SimpleCodeEditor) {
+  const docRect = doc.rect;
   const x = e.clientX - (docRect?.x || 0);
-  const y = e.clientY - (docRect?.y || 0);
+  const y = e.clientY - (docRect?.y || 0) + editor.scrollTop;
   const { lineN, overLines } = doc.getLineNByHeight(y);
   const lineText = getLineTextMap(lineN, doc);
   const posChInfo = surmisePosChInfo(lineText, x, docRect?.x || 0, overLines);
@@ -238,7 +239,7 @@ function surmisePosChInfo(lineText: PosMapLine, x: number, docX: number, overLin
 
 export function surmiseInfoFromPos(pos: Pos, doc: Doc): Pos {
   const lineText = getLineTextMap(pos.line, doc);
-  const docX = doc.getDocRect()?.x;
+  const docX = doc.rect?.x;
   function searchSpan(): PosMapCh {
     // TODO
     return {} as PosMapCh;

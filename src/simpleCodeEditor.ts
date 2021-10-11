@@ -18,6 +18,9 @@ class SimpleCodeEditor {
   readonly wrapper: Wrapper;
   readonly selected: Selected;
 
+  private _scrollTop: number = 0;
+  private _scrollLeft: number = 0;
+
   constructor(options: SimpleCodeEditorOptions) {
     const { value } = options;
     this.doc = new Doc(value);
@@ -26,6 +29,14 @@ class SimpleCodeEditor {
     this.gutters = new Gutters(this.doc.getLinesNum());
     this.wrapper = new Wrapper();
     this.selected = new Selected();
+  }
+
+  get scrollTop() {
+    return this._scrollTop;
+  }
+
+  get scrollLeft() {
+    return this._scrollLeft;
   }
 
   render(container: HTMLElement) {
@@ -40,6 +51,11 @@ class SimpleCodeEditor {
 
   getSelectedCode() {
     return this.doc.getSelectedCode();
+  }
+
+  updateScroll(top: number, left: number) {
+    this._scrollTop = top;
+    this._scrollLeft = left;
   }
 }
 
