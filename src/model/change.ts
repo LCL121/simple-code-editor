@@ -1,5 +1,6 @@
 import { Pos, sortTwoPos } from './pos';
 import { ChangeOrigin } from '../shared/constants';
+import { isUndefined } from '../shared/utils';
 
 interface ChangeOptions {
   from: Pos;
@@ -31,11 +32,11 @@ export class Change {
   replace(options: Partial<ChangeOptions>) {
     const { from, to, origin, removed, text } = options;
     return new Change({
-      from: from || this.from,
-      to: to || this.to,
-      origin: origin || this.origin,
-      text: text || this.text,
-      removed: removed || this.removed
+      from: isUndefined(from) ? this.from : from,
+      to: isUndefined(to) ? this.to : to,
+      origin: isUndefined(origin) ? this.origin : origin,
+      text: isUndefined(text) ? this.text : text,
+      removed: isUndefined(removed) ? this.removed : removed
     });
   }
 
@@ -66,12 +67,12 @@ export class HistoryChange extends Change {
   replace(options: Partial<HistoryChange>) {
     const { from, to, origin, removed, text, isSel } = options;
     return new HistoryChange({
-      from: from || this.from,
-      to: to || this.to,
-      origin: origin || this.origin,
-      text: text || this.text,
-      removed: removed || this.removed,
-      isSel: isSel || this.isSel
+      from: isUndefined(from) ? this.from : from,
+      to: isUndefined(to) ? this.to : to,
+      origin: isUndefined(origin) ? this.origin : origin,
+      text: isUndefined(text) ? this.text : text,
+      removed: isUndefined(removed) ? this.removed : removed,
+      isSel: isUndefined(isSel) ? this.isSel : isSel
     });
   }
 }

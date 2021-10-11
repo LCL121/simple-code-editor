@@ -1,6 +1,6 @@
 import { PosSticky, Point, PosMapCh, PosMapLine } from '../shared/type';
 import { Doc } from './doc';
-import { range, isString, isUndefined, isNumber } from '../shared/utils';
+import { range, isString, isUndefined } from '../shared/utils';
 
 interface PosOptions {
   line: number;
@@ -34,9 +34,9 @@ export class Pos {
   replace(options: Partial<Omit<PosOptions, 'position'>>) {
     const { line, ch, sticky } = options;
     return new Pos({
-      line: line || this.line,
-      ch: ch || this.ch,
-      sticky: sticky || this.sticky
+      line: isUndefined(line) ? this.line : line,
+      ch: isUndefined(ch) ? this.ch : ch,
+      sticky: isUndefined(sticky) ? this.sticky : sticky
     });
   }
 
