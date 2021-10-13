@@ -19,6 +19,7 @@ export class DocHistory {
    */
   private _pushUndo(c: Change) {
     const { origin, from, to, text, removed } = c;
+    this._clearRedo();
     if (this._op === origin && origin === 'compose') {
       this._undo[this._undo.length - 1] = c.toHistoryChange();
       this._isSel = false;
@@ -85,6 +86,16 @@ export class DocHistory {
       this._undo.push(c);
       this._op = 'redo';
       this._isSel = false;
+    }
+  }
+
+  /**
+   * 当有新操作时，清空redo
+   * code mirror以及vscode 逻辑
+   */
+  private _clearRedo() {
+    while (this._redo.length > 0) {
+      this._redo.pop();
     }
   }
 

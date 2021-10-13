@@ -2,7 +2,7 @@ import { Pos, sortTwoPos } from './pos';
 import { ChangeOrigin } from '../shared/constants';
 import { isUndefined } from '../shared/utils';
 
-interface ChangeOptions {
+interface ChangeBaseOptions {
   from: Pos;
   to: Pos;
   origin: ChangeOrigin;
@@ -10,14 +10,14 @@ interface ChangeOptions {
   text: string[];
 }
 
-export class Change {
+class ChangeBase {
   readonly from: Pos;
   readonly to: Pos;
   readonly origin: ChangeOrigin;
   readonly removed?: string[];
   readonly text: string[];
 
-  constructor(options: ChangeOptions) {
+  constructor(options: ChangeBaseOptions) {
     this.from = options.from;
     this.to = options.to;
     this.origin = options.origin;
@@ -27,6 +27,14 @@ export class Change {
 
   sort() {
     return sortTwoPos(this.from, this.to);
+  }
+}
+
+type ChangeOptions = ChangeBaseOptions;
+
+export class Change extends ChangeBase {
+  constructor(options: ChangeOptions) {
+    super(options);
   }
 
   replace(options: Partial<ChangeOptions>) {
@@ -52,11 +60,11 @@ export class Change {
   }
 }
 
-interface HistoryChangeOptions extends ChangeOptions {
+interface HistoryChangeOptions extends ChangeBaseOptions {
   isSel: boolean;
 }
 
-export class HistoryChange extends Change {
+export class HistoryChange extends ChangeBase {
   isSel: boolean = false;
 
   constructor(options: HistoryChangeOptions) {
@@ -73,6 +81,16 @@ export class HistoryChange extends Change {
       text: isUndefined(text) ? this.text : text,
       removed: isUndefined(removed) ? this.removed : removed,
       isSel: isUndefined(isSel) ? this.isSel : isSel
+    });
+  }
+
+  toChange() {
+    return new Change({
+      from: this.from,
+      to: this.to,
+      text: this.text,
+      origin: this.origin,
+      removed: this.removed
     });
   }
 }

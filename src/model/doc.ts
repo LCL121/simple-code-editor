@@ -426,9 +426,9 @@ export class Doc implements VNode {
     }
   }
 
-  updateDocUndo(change: HistoryChange) {
-    const { origin, text, removed, from: start, to: end, isSel } = change;
-    const { from, to, equal } = change.sort();
+  updateDocUndo(hChange: HistoryChange) {
+    const { origin, text, removed, from: start, to: end } = hChange;
+    const { from, to, equal } = hChange.sort();
     if (origin === '-delete') {
       const removedText = removed?.[0];
       if (removedText) {
@@ -443,9 +443,7 @@ export class Doc implements VNode {
           }),
           false
         );
-        if (isSel) {
-          this.updateSelection(new Selection(start, end));
-        }
+        this.updateSelection(new Selection(start, end));
       }
     } else if (origin === 'delete-') {
       const removedText = removed?.[0];
@@ -461,9 +459,7 @@ export class Doc implements VNode {
           }),
           false
         );
-        if (isSel) {
-          this.updateSelection(new Selection(start, end));
-        }
+        this.updateSelection(new Selection(start, end));
       }
     } else if (origin === 'input') {
       if (removed) {
@@ -648,37 +644,78 @@ export class Doc implements VNode {
     }
   }
 
-  updateDocRedo(change: HistoryChange) {
-    const { isSel, from: start, to: end, text, origin } = change;
-    const { from, to } = change.sort();
+  updateDocRedo(hChange: HistoryChange) {
+    const { isSel, from: start, to: end, text, origin, removed } = hChange;
+    const { from, to } = hChange.sort();
     if (origin === '-delete') {
-      this.updateDoc(
-        new Change({
-          from,
-          to,
-          origin: '-delete',
-          text: []
-        }),
-        false
-      );
+      this.updateDoc(hChange.toChange(), false);
       this.updatePos(from);
       this.updateSelection(new Selection(from));
     } else if (origin === 'delete-') {
       if (isSel) {
-        this.updateDoc(
-          new Change({
-            from,
-            to,
-            origin: 'delete-',
-            text: []
-          }),
-          false
-        );
-        this.updatePos(from);
-        this.updateSelection(new Selection(from));
+        this.updateDoc(hChange.toChange(), false);
       } else {
-        // TODO
+        const removedText = removed?.[0];
+        if (removedText) {
+          const texts = splitTextByEnter(removedText);
+          const lastText = texts[texts.length - 1];
+          let newToPos: Pos;
+          if (texts.length === 1) {
+            newToPos = from.replace({ ch: from.ch + lastText.length });
+          } else {
+            newToPos = new Pos({
+              line: from.line + texts.length - 1,
+              ch: lastText.length,
+              sticky: 'before'
+            });
+          }
+          this.updateDoc(
+            new Change({
+              from,
+              to: newToPos,
+              origin: 'delete-',
+              text: []
+            }),
+            false
+          );
+        }
       }
+      this.updatePos(from);
+      this.updateSelection(new Selection(from));
+    } else if (origin === 'input') {
+      // TODO
+    } else if (origin === 'compose') {
+      // TODO
+    } else if (origin === 'enter') {
+      this.updateDoc(hChange.toChange(), false);
+      const newPos = new Pos({
+        line: from.line + 1,
+        ch: 0,
+        sticky: 'before'
+      });
+      this.updatePos(newPos);
+      this.updateSelection(new Selection(newPos));
+    } else if (origin === 'paste') {
+      this.updateDoc(hChange.toChange(), false);
+      const lastText = text[text.length - 1];
+      let newToPos: Pos;
+      if (text.length === 1) {
+        newToPos = from.replace({ ch: from.ch + lastText.length });
+      } else {
+        newToPos = new Pos({
+          line: from.line + text.length - 1,
+          ch: lastText.length,
+          sticky: 'before'
+        });
+      }
+      this.updatePos(newToPos);
+      this.updateSelection(new Selection(newToPos));
+    } else if (origin === 'cut') {
+      // TODO
+    } else if (origin === 'tab') {
+      // TODO
+    } else if (origin === 'reTab') {
+      // TODO
     }
   }
 
