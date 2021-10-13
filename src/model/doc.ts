@@ -638,7 +638,7 @@ export class Doc implements VNode {
           }),
           false
         );
-        this.updatePos(toPos);
+        this.updatePos(end);
         this.updateSelection(new Selection(fromPos, toPos));
       }
     }
@@ -711,11 +711,52 @@ export class Doc implements VNode {
       this.updatePos(newToPos);
       this.updateSelection(new Selection(newToPos));
     } else if (origin === 'cut') {
-      // TODO
+      this.updateDoc(hChange.toChange(), false);
+      let newPos: Pos;
+      if (isSel) {
+        newPos = from;
+      } else {
+        newPos = new Pos({
+          line: from.line,
+          ch: 0,
+          sticky: 'before'
+        });
+      }
+      this.updatePos(newPos);
+      this.updateSelection(new Selection(newPos));
     } else if (origin === 'tab') {
-      // TODO
+      this.updateDoc(hChange.toChange(), false);
+      if (isSel) {
+        const newStartPos = start.replace({ ch: start.ch + 2 });
+        const newEndPos = end.replace({ ch: end.ch + 2 });
+        this.updatePos(newEndPos);
+        this.updateSelection(new Selection(newStartPos, newEndPos));
+      } else {
+        const newPos = from.replace({ ch: from.ch + 2 });
+        this.updatePos(newPos);
+        this.updateSelection(new Selection(newPos));
+      }
     } else if (origin === 'reTab') {
-      // TODO
+      this.updateDoc(hChange.toChange(), false);
+      if (isSel) {
+        if (removed && removed.length > 0) {
+          const newFromPos = from.replace({ ch: from.ch - removed[0].length });
+          const newToPos = to.replace({ ch: to.ch - removed[removed.length - 1].length });
+          if (end.equalCursorPos(from)) {
+            this.updatePos(newFromPos);
+          } else {
+            this.updatePos(newToPos);
+          }
+          this.updateSelection(new Selection(newFromPos, newToPos));
+        }
+      } else {
+        const removedText = removed?.[0];
+        if (removedText) {
+          const newPos = from.replace({ ch: from.ch - removedText.length });
+          this.updatePos(newPos);
+          this.updateSelection(new Selection(newPos));
+        }
+      }
     }
   }
 
