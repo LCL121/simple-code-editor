@@ -683,9 +683,41 @@ export class Doc implements VNode {
       this.updatePos(from);
       this.updateSelection(new Selection(from));
     } else if (origin === 'input') {
-      // TODO
+      if (isSel) {
+        this.updateDoc(
+          new Change({
+            from,
+            to,
+            origin: 'paste',
+            text
+          }),
+          false
+        );
+        /**
+         * 目前text 为一位 ==> 之后需要处理，input 合并
+         */
+        const newPos = from.replace({ ch: from.ch + 1 });
+        this.updatePos(newPos);
+        this.updateSelection(new Selection(newPos));
+      } else {
+        this.updateDoc(
+          new Change({
+            from,
+            to: from,
+            origin: 'paste',
+            text
+          }),
+          false
+        );
+        // 因为替换时，少了一位
+        const newPos = to.replace({ ch: to.ch + 1 });
+        this.updatePos(newPos);
+        this.updateSelection(new Selection(newPos));
+      }
     } else if (origin === 'compose') {
-      // TODO
+      this.updateDoc(hChange.toChange(), false);
+      this.updatePos(end);
+      this.updateSelection(new Selection(end));
     } else if (origin === 'enter') {
       this.updateDoc(hChange.toChange(), false);
       const newPos = new Pos({
