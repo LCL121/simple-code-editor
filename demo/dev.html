@@ -18,7 +18,18 @@
 <body>
   <div id="root"></div>
   <script>
-    const test = new SimpleCodeEditor({ value: 'const a = 1;\nlet b = 2;\n\nvar c = 3;\na\n'});
+    const test = new SimpleCodeEditor({ 
+      value: 'const a = 1;\nlet b = 2;\n\nvar c = 3;\na\n',
+      onSave(value) {
+        console.log(value);
+      },
+      mounted() {
+        console.log('mounted'); 
+      },
+      updated(oldValue, newValue) {
+        console.log(oldValue, newValue);
+      }
+    });
     test.render(document.getElementById('root'));
     window.test = test;
 

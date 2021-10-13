@@ -5,9 +5,13 @@ import { Cursor } from './display/cursor';
 import { Gutters } from './display/gutters';
 import { Wrapper } from './display/wrapper';
 import { Selected } from './display/selected';
+import { OnSave, Mounted, Updated } from './shared/type';
 
 interface SimpleCodeEditorOptions {
   value: string;
+  mounted?: Mounted;
+  updated?: Updated;
+  onSave?: OnSave;
 }
 
 class SimpleCodeEditor {
@@ -18,17 +22,25 @@ class SimpleCodeEditor {
   readonly wrapper: Wrapper;
   readonly selected: Selected;
 
+  readonly onSave?: OnSave;
+  readonly mounted?: Mounted;
+  readonly updated?: Updated;
+
   private _scrollTop: number = 0;
   private _scrollLeft: number = 0;
 
   constructor(options: SimpleCodeEditorOptions) {
-    const { value } = options;
+    const { value, onSave, mounted, updated } = options;
     this.doc = new Doc(value);
     this.input = new Input();
     this.cursor = new Cursor();
     this.gutters = new Gutters(this.doc.getLinesNum());
     this.wrapper = new Wrapper();
     this.selected = new Selected();
+
+    this.onSave = onSave;
+    this.mounted = mounted;
+    this.updated = updated;
   }
 
   get scrollTop() {

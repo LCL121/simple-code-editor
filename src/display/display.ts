@@ -1,11 +1,9 @@
 import SimpleCodeEditor from '../simpleCodeEditor';
 import { Doc } from '../model/doc';
 import { Change } from '../model/change';
-import { Input } from './input';
 import { Cursor } from './cursor';
 import { Gutters } from './gutters';
 import { Selected } from './selected';
-import { Wrapper } from './wrapper';
 import { PosSticky, VNode } from '../shared/type';
 import { posFromMouse, Pos, isPos } from '../model/pos';
 import { Selection } from '../model/selection';
@@ -48,16 +46,20 @@ export class Display {
       Display._addEventListener(editor);
 
       emitterInstance.on('update', () => {
-        Display._update(doc, cursor, gutters, selected);
+        Display._update(editor);
       });
 
       doc.updateDocRect();
+
+      editor.mounted?.();
     } else {
       console.warn('doc initialized');
     }
   }
 
-  private static _update(doc: Doc, cursor: Cursor, gutters: Gutters, selected: Selected) {
+  private static _update(editor: SimpleCodeEditor) {
+    const { doc, cursor, gutters, selected } = editor;
+
     if (doc.mouseDown && doc.sel) {
       selected.update(doc.sel);
     }
@@ -248,7 +250,7 @@ export class Display {
       doc.isComposing = false;
     });
     input.ele.addEventListener('keydown', (e: KeyboardEvent) => {
-      keydownFn(e, doc, cursor, selected);
+      keydownFn(e, editor);
     });
     input.ele.addEventListener('copy', (e) => {
       e_preventDefault(e);
@@ -375,7 +377,9 @@ function createVNodeElement(node: VNode): HTMLElement {
   return ele;
 }
 
-function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selected) {
+function keydownFn(e: KeyboardEvent, editor: SimpleCodeEditor) {
+  const { doc, cursor, selected } = editor;
+
   // 快捷键处理
   const shortcutKeyName = getShortcutKeyName(e);
   if (isShortcutKeyName(shortcutKeyName)) {
@@ -457,6 +461,8 @@ function keydownFn(e: KeyboardEvent, doc: Doc, cursor: Cursor, selected: Selecte
           }
         }
       }
+    } else if (shortcutValue === 'save') {
+      editor.onSave?.(doc.getCode());
     }
     return;
   }

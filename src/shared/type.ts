@@ -61,3 +61,9 @@ export interface Rect {
   height: number;
   width: number;
 }
+
+export type Mounted = () => void;
+
+export type Updated = (oldValue: string, newValue: string) => void;
+
+export type OnSave = (value: string) => void;
