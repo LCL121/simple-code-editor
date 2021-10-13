@@ -426,7 +426,7 @@ export class Doc implements VNode {
     }
   }
 
-  reverseUpdateDocUndo(change: HistoryChange) {
+  updateDocUndo(change: HistoryChange) {
     const { origin, text, removed, from: start, to: end, isSel } = change;
     const { from, to, equal } = change.sort();
     if (origin === '-delete') {
@@ -644,6 +644,40 @@ export class Doc implements VNode {
         );
         this.updatePos(toPos);
         this.updateSelection(new Selection(fromPos, toPos));
+      }
+    }
+  }
+
+  updateDocRedo(change: HistoryChange) {
+    const { isSel, from: start, to: end, text, origin } = change;
+    const { from, to } = change.sort();
+    if (origin === '-delete') {
+      this.updateDoc(
+        new Change({
+          from,
+          to,
+          origin: '-delete',
+          text: []
+        }),
+        false
+      );
+      this.updatePos(from);
+      this.updateSelection(new Selection(from));
+    } else if (origin === 'delete-') {
+      if (isSel) {
+        this.updateDoc(
+          new Change({
+            from,
+            to,
+            origin: 'delete-',
+            text: []
+          }),
+          false
+        );
+        this.updatePos(from);
+        this.updateSelection(new Selection(from));
+      } else {
+        // TODO
       }
     }
   }

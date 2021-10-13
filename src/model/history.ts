@@ -68,7 +68,7 @@ export class DocHistory {
   private _popUndo() {
     const c = this._undo.pop();
     if (c) {
-      this._doc.reverseUpdateDocUndo(c);
+      this._doc.updateDocUndo(c);
       this._redo.push(c);
       this._op = 'undo';
       this._isSel = false;
@@ -81,7 +81,10 @@ export class DocHistory {
   private _popRedo() {
     const c = this._redo.pop();
     if (c) {
+      this._doc.updateDocRedo(c);
       this._undo.push(c);
+      this._op = 'redo';
+      this._isSel = false;
     }
   }
 

@@ -8,11 +8,16 @@ const unFocusClass = `${classPrefix}_selected_item`;
 export class Selected {
   readonly ele: HTMLDivElement;
   private readonly _selectedItem = new Map<number, HTMLDivElement>();
+  private _isHidden: boolean = true;
 
   constructor() {
     const selected = document.createElement('div');
     selected.setAttribute('class', `${classPrefix}_selected`);
     this.ele = selected;
+  }
+
+  get isHidden() {
+    return this._isHidden;
   }
 
   private _updateSelectedItem(lineN: number, options?: { start?: number; end?: number }) {
@@ -37,6 +42,7 @@ export class Selected {
   }
 
   hidden() {
+    this._isHidden = true;
     for (const [key, value] of this._selectedItem) {
       value.style.width = '0px';
     }
@@ -69,6 +75,7 @@ export class Selected {
       } else {
         this._updateSelectedItem(from.line, { start: from.position.x, end: to.position.x });
       }
+      this._isHidden = false;
     }
   }
 }

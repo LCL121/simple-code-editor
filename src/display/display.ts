@@ -60,9 +60,13 @@ export class Display {
   private static _update(editor: SimpleCodeEditor) {
     const { doc, cursor, gutters, selected } = editor;
 
+    // 处理selected 展示
     if (doc.mouseDown && doc.sel) {
       selected.update(doc.sel);
+    } else if (!doc.sel?.isValid() && !selected.isHidden) {
+      selected.hidden();
     }
+
     let update = false;
     while (doc.effect.length() > 0) {
       const line = doc.effect.shift();
@@ -83,6 +87,8 @@ export class Display {
         update = true;
       }
     }
+
+    // 处理光标以及selected 展示
     if (update) {
       doc.pos?.surmiseInfo(doc);
       cursor.updatePosition(doc.pos!);
