@@ -1,9 +1,5 @@
 import SimpleCodeEditor from '../simpleCodeEditor';
-import { Doc } from '../model/doc';
 import { Change } from '../model/change';
-import { Cursor } from './cursor';
-import { Gutters } from './gutters';
-import { Selected } from './selected';
 import { PosSticky, VNode } from '../shared/type';
 import { posFromMouse, Pos, isPos } from '../model/pos';
 import { Selection } from '../model/selection';
@@ -19,9 +15,10 @@ import {
   emitter,
   splitTextByEnter,
   getShortcutKeyName,
-  isShortcutKeyName
+  isShortcutKeyName,
+  throttle
 } from '../shared/utils';
-import { KeyboardMapKeys, keyboardMapKeys, InputTypes, shortcutMap } from '../shared/constants';
+import { KeyboardMapKeys, keyboardMapKeys, InputTypes, shortcutMap, classPrefix } from '../shared/constants';
 
 interface EmitterEvents {
   update: any;
@@ -35,11 +32,12 @@ export function emitterEmitUpdate() {
 
 export class Display {
   static init(editor: SimpleCodeEditor, container: HTMLElement) {
-    const { doc, input, gutters, cursor, wrapper, selected } = editor;
+    const { doc, input, gutters, cursor, wrapper, selected, dragCursor } = editor;
     if (doc.init) {
       const docEle = createVNodeElement(doc);
       wrapper.ele.append(input.ele, gutters.ele, selected.ele, docEle);
       docEle.appendChild(cursor.ele);
+      docEle.appendChild(dragCursor.ele);
       container.appendChild(wrapper.ele);
       doc.init = false;
 
@@ -67,6 +65,18 @@ export class Display {
       selected.hidden();
     }
 
+    // 处理doc element update
+    if (doc.isUpdateEle) {
+      while (doc.effectAttrs.length > 0) {
+        const attr = doc.effectAttrs.pop();
+        if (attr) {
+          doc.ele?.setAttribute(attr.name, attr.value);
+        }
+      }
+      doc.isUpdateEle = false;
+    }
+
+    // 处理lines update
     let update = false;
     while (doc.effect.length() > 0) {
       const line = doc.effect.shift();
@@ -100,7 +110,7 @@ export class Display {
   }
 
   private static _addEventListener(editor: SimpleCodeEditor) {
-    const { doc, input, cursor, selected } = editor;
+    const { doc, input, cursor, selected, dragCursor } = editor;
 
     // doc 监听事件
     doc.ele?.addEventListener('mousedown', (e) => {
@@ -122,29 +132,63 @@ export class Display {
         doc.isDrag = true;
       }
     });
-    doc.ele?.addEventListener('mousemove', (e) => {
-      if (doc.mouseDown) {
-        if (doc.isDrag) {
-          // TODO
-        } else {
-          requestAnimationFrame(() => {
-            const pos = posFromMouse(e, doc, editor);
+
+    doc.ele?.addEventListener(
+      'mousemove',
+      throttle<MouseEvent>((e) => {
+        const pos = posFromMouse(e, doc, editor);
+        if (doc.mouseDown) {
+          if (doc.isDrag) {
+            doc.updateAttrs({ name: 'class', value: `${classPrefix}_doc ${classPrefix}_doc_drag` });
+            if (!doc.sel?.isInclude(pos)) {
+              dragCursor.show();
+              dragCursor.updatePosition(pos);
+            } else {
+              dragCursor.hidden();
+            }
+          } else {
             doc.sel?.updateEndPos(pos);
             doc.updatePos(pos);
             cursor.updatePosition(pos);
-            emitterEmitUpdate();
-          });
+          }
+          emitterEmitUpdate();
         }
-      }
-    });
+      })
+    );
     doc.ele?.addEventListener('mouseup', (e) => {
       const pos = posFromMouse(e, doc, editor);
       if (doc.isDrag) {
-        if (doc.pos && pos.cmp(doc.pos) === 0) {
+        doc.updateAttrs({ name: 'class', value: `${classPrefix}_doc` });
+        if (doc.pos && doc.sel?.isValid() && doc.sel?.isInclude(pos)) {
           doc.updatePos(pos);
           doc.updateSelection(new Selection(pos));
           cursor.updatePosition(pos);
           emitterEmitUpdate();
+        } else {
+          dragCursor.hidden();
+          // 拖拽逻辑
+          if (doc.sel?.isValid()) {
+            const { from, to } = doc.sel.sort();
+            // 是得doc update paste 时，知道粘贴的位置
+            doc.updatePos(pos);
+            const texts = makeArray(splitTextByEnter(doc.getSelectedCode()));
+            doc.updateDoc(
+              new Change({
+                from,
+                to,
+                origin: 'drag',
+                text: texts,
+                removed: makeArray(doc.getSelectedCode())
+              })
+            );
+            if (texts.length === 1) {
+              // TODO
+            } else {
+              const newPos = to.replace({ line: pos.line + to.line - from.line });
+              doc.updatePos(newPos);
+              doc.updateSelection(new Selection(pos, newPos));
+            }
+          }
         }
       } else {
         doc.sel?.updateEndPos(pos);

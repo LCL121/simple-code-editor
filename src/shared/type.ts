@@ -20,7 +20,7 @@ export interface VNodeAttr {
   value: string;
 }
 
-export type VNodeAttrs = VNodeAttr[] | undefined;
+export type VNodeAttrs = VNodeAttr[];
 
 export type PosSticky = 'before' | 'after' | null;
 

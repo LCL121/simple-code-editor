@@ -6,6 +6,7 @@ import { Gutters } from './display/gutters';
 import { Wrapper } from './display/wrapper';
 import { Selected } from './display/selected';
 import { OnSave, Mounted, Updated } from './shared/type';
+import { classPrefix } from './shared/constants';
 
 interface SimpleCodeEditorOptions {
   value: string;
@@ -18,6 +19,7 @@ class SimpleCodeEditor {
   readonly doc: Doc;
   readonly input: Input;
   readonly cursor: Cursor;
+  readonly dragCursor: Cursor;
   readonly gutters: Gutters;
   readonly wrapper: Wrapper;
   readonly selected: Selected;
@@ -33,7 +35,8 @@ class SimpleCodeEditor {
     const { value, onSave, mounted, updated } = options;
     this.doc = new Doc(value);
     this.input = new Input();
-    this.cursor = new Cursor();
+    this.cursor = new Cursor(`${classPrefix}_cursor`);
+    this.dragCursor = new Cursor(`${classPrefix}_drag_cursor`);
     this.gutters = new Gutters(this.doc.getLinesNum());
     this.wrapper = new Wrapper();
     this.selected = new Selected();

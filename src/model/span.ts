@@ -6,7 +6,7 @@ export class Span implements VNode {
   nextSibling: NextSiblingVNode = undefined;
   ele: Text | undefined;
   tag = 'span';
-  attrs: VNodeAttrs;
+  attrs: VNodeAttrs = [];
   text: string;
   constructor(text: string, parent: VNode) {
     this.parent;

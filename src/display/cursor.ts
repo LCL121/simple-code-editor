@@ -4,9 +4,9 @@ import { classPrefix } from '../shared/constants';
 export class Cursor {
   readonly ele: HTMLDivElement;
 
-  constructor() {
+  constructor(className: string) {
     const div = document.createElement('div');
-    div.setAttribute('class', `${classPrefix}_cursor`);
+    div.setAttribute('class', className);
     div.style.display = 'none';
     this.ele = div;
   }

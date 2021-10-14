@@ -25,3 +25,15 @@ export function getShortcutKeyName(e: KeyboardEvent) {
   }
   return result;
 }
+
+export function throttle<T>(func: (data: T) => void) {
+  let ticking: number | null = null;
+  return function (data: T) {
+    if (ticking === null) {
+      ticking = requestAnimationFrame(() => {
+        func(data);
+        ticking = null;
+      });
+    }
+  };
+}

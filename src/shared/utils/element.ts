@@ -1,11 +1,9 @@
 import { VNodeAttrs } from '../type';
 
-export function createElement(tag: string, attrs?: VNodeAttrs) {
+export function createElement(tag: string, attrs: VNodeAttrs) {
   const ele = document.createElement(tag);
-  if (attrs !== undefined) {
-    for (const attr of attrs) {
-      ele.setAttribute(attr.name, attr.value);
-    }
+  for (const attr of attrs) {
+    ele.setAttribute(attr.name, attr.value);
   }
   return ele;
 }

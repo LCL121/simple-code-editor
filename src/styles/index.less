@@ -33,6 +33,7 @@ span {
     position: absolute;
     left: @gutters-width + @gutters-margin-right;
     width: calc(100% - @gutters-width - @gutters-margin-right);
+    z-index: -1;
 
     &_item {
       position: absolute;
@@ -70,6 +71,10 @@ span {
     position: relative;
     cursor: text;
     flex: 1;
+
+    &_drag {
+      cursor: default;
+    }
   }
 
   &_line {
@@ -90,6 +95,15 @@ span {
     height: @line-height;
     background-color: #000;
     animation: blink 1s infinite;
+  }
+
+  &_drag_cursor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: @line-height;
+    border-right: 1px black dashed;
   }
 }
 

@@ -3,7 +3,7 @@ import { Pos, judgeChBySticky } from './pos';
 import { Effect } from './effect';
 import { Change, HistoryChange } from './change';
 import { Selection } from './selection';
-import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap, Rect } from '../shared/type';
+import { VNode, ParentVNode, NextSiblingVNode, VNodeAttrs, PosMap, Rect, VNodeAttr } from '../shared/type';
 import { lineHeight, classPrefix } from '../shared/constants';
 import { makeArray, splitTextByEnter } from '../shared/utils';
 import { DocHistory } from './history';
@@ -41,6 +41,11 @@ export class Doc implements VNode {
    * 标记是否拖拽
    */
   isDrag: boolean = false;
+  /**
+   * 标记是否更新atrrs
+   */
+  isUpdateEle: boolean = false;
+  effectAttrs: VNodeAttrs = [];
 
   constructor(text: string) {
     this.children = this._createLines(splitTextByEnter(text));
@@ -412,6 +417,27 @@ export class Doc implements VNode {
             this.effect.push(this.children[curLineN]);
           }
         }
+      }
+    } else if (origin === 'drag') {
+      this.updateDoc(
+        new Change({
+          from,
+          to,
+          origin: '-delete',
+          text: []
+        }),
+        false
+      );
+      if (this.pos) {
+        this.updateDoc(
+          new Change({
+            from: this.pos,
+            to: this.pos,
+            origin: 'paste',
+            text
+          }),
+          false
+        );
       }
     }
   }
@@ -814,5 +840,33 @@ export class Doc implements VNode {
 
   updateSelection(sel: Selection) {
     this.sel = sel;
+  }
+
+  updateAttrs(attrs: VNodeAttr | VNodeAttrs) {
+    this.isUpdateEle = true;
+    if (Array.isArray(attrs)) {
+      for (const attr of attrs) {
+        updateAttrsItem(this, attr);
+      }
+    } else {
+      updateAttrsItem(this, attrs);
+    }
+  }
+}
+
+function updateAttrsItem(doc: Doc, attr: VNodeAttr) {
+  const selected = doc.attrs?.find((value) => {
+    if (value.name === attr.name) {
+      return true;
+    }
+  });
+  if (selected) {
+    if (attr.value !== selected.value) {
+      selected.value = attr.value;
+      doc.effectAttrs.push(attr);
+    }
+  } else {
+    doc.attrs?.push(attr);
+    doc.effectAttrs.push(attr);
   }
 }
