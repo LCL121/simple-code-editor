@@ -431,7 +431,7 @@ export class Doc implements VNode {
   }
 
   updateDocUndo(hChange: HistoryChange) {
-    const { origin, text, removed, from: start, to: end } = hChange;
+    const { origin, text, removed, from: start, to: end, isSel } = hChange;
     const { from, to, equal } = hChange.sort();
     if (origin === '-delete') {
       const removedText = removed?.[0];
@@ -447,7 +447,9 @@ export class Doc implements VNode {
           }),
           false
         );
-        this.updateSelection(new Selection(start, end));
+        if (isSel) {
+          this.updateSelection(new Selection(start, end));
+        }
       }
     } else if (origin === 'delete-') {
       const removedText = removed?.[0];
@@ -463,7 +465,9 @@ export class Doc implements VNode {
           }),
           false
         );
-        this.updateSelection(new Selection(start, end));
+        if (isSel) {
+          this.updateSelection(new Selection(start, end));
+        }
       }
     } else if (origin === 'input') {
       if (removed) {
@@ -652,7 +656,15 @@ export class Doc implements VNode {
     const { isSel, from: start, to: end, text, origin, removed } = hChange;
     const { from, to } = hChange.sort();
     if (origin === '-delete') {
-      this.updateDoc(hChange.toChange(), false);
+      this.updateDoc(
+        new Change({
+          from,
+          to,
+          origin: '-delete',
+          text: []
+        }),
+        false
+      );
       this.updatePos(from);
       this.updateSelection(new Selection(from));
     } else if (origin === 'delete-') {
