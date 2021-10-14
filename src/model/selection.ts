@@ -30,6 +30,13 @@ export class Selection {
     return this.startPos.cmp(this.endPos) !== 0;
   }
 
+  isInclude(target: Pos) {
+    if (this.startPos.cmp(target) <= 0 && this.endPos.cmp(target) >= 0) {
+      return true;
+    }
+    return false;
+  }
+
   sort() {
     const { startPos, endPos } = this;
     return sortTwoPos(startPos, endPos);

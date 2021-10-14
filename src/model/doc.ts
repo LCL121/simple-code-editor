@@ -37,6 +37,10 @@ export class Doc implements VNode {
    */
   isComposing = false;
   history: DocHistory;
+  /**
+   * 标记是否拖拽
+   */
+  isDrag: boolean = false;
 
   constructor(text: string) {
     this.children = this._createLines(splitTextByEnter(text));

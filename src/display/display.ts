@@ -105,36 +105,55 @@ export class Display {
     // doc 监听事件
     doc.ele?.addEventListener('mousedown', (e) => {
       e_preventDefault(e);
-      selected.hidden();
       doc.posMoveOver = false;
       doc.mouseDown = true;
       const pos = posFromMouse(e, doc, editor);
-      doc.updateSelection(new Selection(pos));
-      doc.updatePos(pos);
-      if (activeElt() === document.body) {
-        input.focus();
-        cursor.show();
+      if (!doc.sel?.isInclude(pos)) {
+        selected.hidden();
+        doc.updatePos(pos);
+        doc.updateSelection(new Selection(pos));
+        if (activeElt() === document.body) {
+          input.focus();
+          cursor.show();
+        }
+        cursor.updatePosition(pos);
+      } else {
+        doc.updatePos(pos);
+        doc.isDrag = true;
       }
-      cursor.updatePosition(pos);
     });
     doc.ele?.addEventListener('mousemove', (e) => {
-      requestAnimationFrame(() => {
-        if (doc.mouseDown) {
-          const pos = posFromMouse(e, doc, editor);
-          doc.sel?.updateEndPos(pos);
+      if (doc.mouseDown) {
+        if (doc.isDrag) {
+          // TODO
+        } else {
+          requestAnimationFrame(() => {
+            const pos = posFromMouse(e, doc, editor);
+            doc.sel?.updateEndPos(pos);
+            doc.updatePos(pos);
+            cursor.updatePosition(pos);
+            emitterEmitUpdate();
+          });
+        }
+      }
+    });
+    doc.ele?.addEventListener('mouseup', (e) => {
+      const pos = posFromMouse(e, doc, editor);
+      if (doc.isDrag) {
+        if (doc.pos && pos.cmp(doc.pos) === 0) {
           doc.updatePos(pos);
+          doc.updateSelection(new Selection(pos));
           cursor.updatePosition(pos);
           emitterEmitUpdate();
         }
-      });
-    });
-    doc.ele?.addEventListener('mouseup', (e) => {
+      } else {
+        doc.sel?.updateEndPos(pos);
+        doc.updatePos(pos);
+        cursor.updatePosition(pos);
+        emitterEmitUpdate();
+      }
+      doc.isDrag = false;
       doc.mouseDown = false;
-      const pos = posFromMouse(e, doc, editor);
-      doc.sel?.updateEndPos(pos);
-      doc.updatePos(pos);
-      cursor.updatePosition(pos);
-      emitterEmitUpdate();
     });
 
     // input 监听事件
