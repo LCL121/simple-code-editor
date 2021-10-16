@@ -164,7 +164,10 @@ export class Doc implements VNode {
   removeLine(target: Line) {
     const idx = this.children.indexOf(target);
     if (idx !== -1) {
-      this.children.splice(idx, 1);
+      const [removed] = this.children.splice(idx, 1);
+      if (idx > 0) {
+        this.children[idx - 1].nextSibling = removed.nextSibling;
+      }
       return true;
     }
     return false;
