@@ -432,15 +432,38 @@ export class Doc implements VNode {
         false
       );
       if (this.pos) {
-        this.updateDoc(
-          new Change({
-            from: this.pos,
-            to: this.pos,
-            origin: 'paste',
-            text
-          }),
-          false
-        );
+        if (to.cmp(this.pos) < 0) {
+          let newPos: Pos;
+          if (to.line === this.pos.line) {
+            const newChX = from.getPosChBySticky() + this.pos.getPosChBySticky() - to.getPosChBySticky();
+            newPos = new Pos({
+              line: from.line,
+              ch: newChX,
+              sticky: 'before'
+            });
+          } else {
+            newPos = this.pos.replace({ line: this.pos.line - text.length + 2 });
+          }
+          this.updateDoc(
+            new Change({
+              from: newPos,
+              to: newPos,
+              origin: 'paste',
+              text
+            }),
+            false
+          );
+        } else {
+          this.updateDoc(
+            new Change({
+              from: this.pos,
+              to: this.pos,
+              origin: 'paste',
+              text
+            }),
+            false
+          );
+        }
       }
     }
   }

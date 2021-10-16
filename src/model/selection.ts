@@ -31,7 +31,8 @@ export class Selection {
   }
 
   isInclude(target: Pos) {
-    if (this.startPos.cmp(target) <= 0 && this.endPos.cmp(target) >= 0) {
+    const { from, to } = this.sort();
+    if (from.cmp(target) <= 0 && to.cmp(target) >= 0) {
       return true;
     }
     return false;

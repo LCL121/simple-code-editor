@@ -182,11 +182,30 @@ export class Display {
               })
             );
             if (texts.length === 1) {
-              // TODO
-            } else {
-              const newPos = to.replace({ line: pos.line + to.line - from.line });
+              const newPos = new Pos({
+                line: pos.line,
+                ch: pos.getPosChBySticky() + texts[0].length,
+                sticky: 'before'
+              });
               doc.updatePos(newPos);
               doc.updateSelection(new Selection(pos, newPos));
+            } else {
+              let line: number;
+              let startPos: Pos;
+              if (to.cmp(pos) < 0) {
+                line = pos.line;
+                startPos = pos.replace({ line: pos.line - texts.length + 1 });
+              } else {
+                line = pos.line + texts.length - 1;
+                startPos = pos;
+              }
+              const newPos = new Pos({
+                line,
+                ch: texts[texts.length - 1].length,
+                sticky: 'before'
+              });
+              doc.updatePos(newPos);
+              doc.updateSelection(new Selection(startPos!, newPos));
             }
           }
         }
