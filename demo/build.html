@@ -5,15 +5,45 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Code Editor</title>
+  <style>
+    #root {
+      height: 50vh;
+      /* width: 50vw; */
+      overflow: auto;
+    }
+  </style>
   <link rel="stylesheet" href="../dist/simpleCodeEditor.min.css">
   <script src="../dist/simpleCodeEditor.min.js"></script>
 </head>
 <body>
   <div id="root"></div>
   <script>
-    const test = new SimpleCodeEditor({ value: 'const a = 1;\nlet b = 2;\n\nvar c = 3;\na\n'});
+    const test = new SimpleCodeEditor({ 
+      value: 'const a = 1;\nlet b = 2;\n\nvar c = 3;\na\n',
+      onSave(value) {
+        console.log(value);
+      },
+      mounted() {
+        console.log('mounted'); 
+      },
+      updated(oldValue, newValue) {
+        console.log(oldValue, newValue);
+      }
+    });
     test.render(document.getElementById('root'));
     window.test = test;
+
+    const root = document.getElementById('root');
+    let timer = null;
+    root.addEventListener('scroll', function () {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      timer = setTimeout(() => {
+        test.updateScroll(root.scrollTop, root.scrollLeft);
+        timer = null;
+      }, 50);
+    });
   </script>
 </body>
 </html>
