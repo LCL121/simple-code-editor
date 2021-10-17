@@ -422,6 +422,7 @@ export class Doc implements VNode {
         }
       }
     } else if (origin === 'drag') {
+      this.clearPosMap(0, this.getMaxLineN());
       this.updateDoc(
         new Change({
           from,
@@ -442,7 +443,7 @@ export class Doc implements VNode {
               sticky: 'before'
             });
           } else {
-            newPos = this.pos.replace({ line: this.pos.line - text.length + 2 });
+            newPos = this.pos;
           }
           this.updateDoc(
             new Change({

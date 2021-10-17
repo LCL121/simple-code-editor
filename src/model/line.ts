@@ -17,13 +17,31 @@ export class Line implements VNode {
   tag = 'p';
   attrs: VNodeAttrs = [{ name: 'class', value: `${classPrefix}_line` }];
   text: string;
-  effectTag?: 'update' | 'delete' | 'add';
+  private _effectTag?: 'update' | 'delete' | 'add';
+
+  get effectTag() {
+    return this._effectTag;
+  }
+
+  set effectTag(tag) {
+    if (this._effectTag === 'delete' && tag !== undefined) {
+      throw Error('effect tag is delete');
+    }
+    this._effectTag = tag;
+  }
 
   constructor(text: string, parent: VNode, nextSibling?: VNode) {
     this.children = text;
     this.parent = parent;
     this.nextSibling = nextSibling;
     this.text = text;
+  }
+
+  isValid() {
+    if (this._effectTag === 'delete') {
+      return false;
+    }
+    return true;
   }
 
   updateLine(options: UpdateLineOptions) {

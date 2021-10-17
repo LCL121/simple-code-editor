@@ -194,7 +194,15 @@ export class Display {
               let startPos: Pos;
               if (to.cmp(pos) < 0) {
                 line = pos.line;
-                startPos = pos.replace({ line: pos.line - texts.length + 1 });
+                if (pos.line === to.line) {
+                  startPos = pos.replace({
+                    line: pos.line - texts.length + 1,
+                    ch: pos.getPosChBySticky() - to.getPosChBySticky() + from.getPosChBySticky(),
+                    sticky: 'before'
+                  });
+                } else {
+                  startPos = pos.replace({ line: pos.line - texts.length + 1 });
+                }
               } else {
                 line = pos.line + texts.length - 1;
                 startPos = pos;
