@@ -1,4 +1,5 @@
 import { Pos, sortTwoPos } from './pos';
+import { Selection } from './selection';
 import { ChangeOrigin } from '../shared/constants';
 import { isUndefined } from '../shared/utils';
 
@@ -48,39 +49,56 @@ export class Change extends ChangeBase {
     });
   }
 
-  toHistoryChange(isSel: boolean = false) {
+  toHistoryChange(isSel: boolean = false, dragSelection?: Selection, dragPos?: Pos) {
+    if (this.origin === 'drag') {
+      if (dragSelection === undefined) {
+        throw Error('drag need dragSelection');
+      } else if (dragPos === undefined) {
+        throw Error('drag need dragPos');
+      }
+    }
     return new HistoryChange({
       from: this.from,
       to: this.to,
       text: this.text,
       origin: this.origin,
       removed: this.removed,
-      isSel: isSel
+      isSel,
+      dragSelection,
+      dragPos
     });
   }
 }
 
 interface HistoryChangeOptions extends ChangeBaseOptions {
   isSel: boolean;
+  dragSelection?: Selection;
+  dragPos?: Pos;
 }
 
 export class HistoryChange extends ChangeBase {
   isSel: boolean = false;
+  dragSelection?: Selection;
+  dragPos?: Pos;
 
   constructor(options: HistoryChangeOptions) {
     super(options);
     this.isSel = options.isSel;
+    this.dragSelection = options.dragSelection;
+    this.dragPos = options.dragPos;
   }
 
   replace(options: Partial<HistoryChange>) {
-    const { from, to, origin, removed, text, isSel } = options;
+    const { from, to, origin, removed, text, isSel, dragSelection, dragPos } = options;
     return new HistoryChange({
       from: isUndefined(from) ? this.from : from,
       to: isUndefined(to) ? this.to : to,
       origin: isUndefined(origin) ? this.origin : origin,
       text: isUndefined(text) ? this.text : text,
       removed: isUndefined(removed) ? this.removed : removed,
-      isSel: isUndefined(isSel) ? this.isSel : isSel
+      isSel: isUndefined(isSel) ? this.isSel : isSel,
+      dragSelection: isUndefined(dragSelection) ? this.dragSelection : dragSelection,
+      dragPos: isUndefined(dragPos) ? this.dragPos : dragPos
     });
   }
 

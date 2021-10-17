@@ -2,6 +2,8 @@ import { ChangeOrigin, mergeOps } from '../shared/constants';
 import { makeArray } from '../shared/utils';
 import { Change, HistoryChange } from './change';
 import { Doc } from './doc';
+import { Pos } from './pos';
+import { Selection } from './selection';
 
 export class DocHistory {
   private readonly _undo: HistoryChange[] = [];
@@ -56,6 +58,45 @@ export class DocHistory {
         this._undo.push(c.toHistoryChange());
       }
       this._isSel = false;
+    } else if (origin === 'drag') {
+      this._isSel = true;
+      const pos = this._doc.pos;
+      if (pos) {
+        let sel: Selection;
+        if (text.length === 1) {
+          const newPos = new Pos({
+            line: pos.line,
+            ch: pos.getPosChBySticky() + text[0].length,
+            sticky: 'before'
+          });
+          sel = new Selection(pos, newPos);
+        } else {
+          let line: number;
+          let startPos: Pos;
+          if (to.cmp(pos) < 0) {
+            line = pos.line;
+            if (pos.line === to.line) {
+              startPos = pos.replace({
+                line: pos.line - text.length + 1,
+                ch: pos.getPosChBySticky() - to.getPosChBySticky() + from.getPosChBySticky(),
+                sticky: 'before'
+              });
+            } else {
+              startPos = pos.replace({ line: pos.line - text.length + 1 });
+            }
+          } else {
+            line = pos.line + text.length - 1;
+            startPos = pos;
+          }
+          const newPos = new Pos({
+            line,
+            ch: text[text.length - 1].length,
+            sticky: 'before'
+          });
+          sel = new Selection(startPos, newPos);
+        }
+        this._undo.push(c.toHistoryChange(true, sel, pos));
+      }
     } else {
       this._isSel = true;
       this._undo.push(c.toHistoryChange(true));

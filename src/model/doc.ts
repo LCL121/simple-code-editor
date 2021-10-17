@@ -484,7 +484,7 @@ export class Doc implements VNode {
   }
 
   updateDocUndo(hChange: HistoryChange) {
-    const { origin, text, removed, from: start, to: end, isSel } = hChange;
+    const { origin, text, removed, from: start, to: end, isSel, dragSelection } = hChange;
     const { from, to, equal } = hChange.sort();
     if (origin === '-delete') {
       const removedText = removed?.[0];
@@ -702,11 +702,27 @@ export class Doc implements VNode {
         this.updatePos(end);
         this.updateSelection(new Selection(fromPos, toPos));
       }
+    } else if (origin === 'drag') {
+      if (dragSelection) {
+        const { from: dragFrom, to: dragTo } = dragSelection?.sort();
+        this.updatePos(from);
+        this.updateDoc(
+          new Change({
+            from: dragFrom,
+            to: dragTo,
+            origin,
+            text
+          }),
+          false
+        );
+        this.updatePos(end);
+        this.updateSelection(new Selection(from, to));
+      }
     }
   }
 
   updateDocRedo(hChange: HistoryChange) {
-    const { isSel, from: start, to: end, text, origin, removed } = hChange;
+    const { isSel, from: start, to: end, text, origin, removed, dragPos, dragSelection } = hChange;
     const { from, to } = hChange.sort();
     if (origin === '-delete') {
       this.updateDoc(
@@ -857,6 +873,13 @@ export class Doc implements VNode {
           this.updatePos(newPos);
           this.updateSelection(new Selection(newPos));
         }
+      }
+    } else if (origin === 'drag') {
+      if (dragPos && dragSelection) {
+        this.updatePos(dragPos);
+        this.updateDoc(hChange.toChange(), false);
+        this.updatePos(dragSelection.endPos);
+        this.updateSelection(dragSelection);
       }
     }
   }
