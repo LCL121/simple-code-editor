@@ -14,6 +14,10 @@ rimraf.sync(path.resolve(__dirname, '../dist'));
 execa('rollup', ['-c', '--env=build'], {
   stdio: 'inherit'
 }).then(() => {
+  rimraf.sync(path.resolve(__dirname, '../dist/display'));
+  rimraf.sync(path.resolve(__dirname, '../dist/model'));
+  rimraf.sync(path.resolve(__dirname, '../dist/shared'));
+
   gulp.src('dist/simpleCodeEditor.min.js')
   .pipe(header(
 `/*!
