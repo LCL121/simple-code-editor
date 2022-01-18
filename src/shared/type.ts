@@ -64,6 +64,8 @@ export interface Rect {
 
 export type Mounted = () => void;
 
+export type Reset = () => void;
+
 export type Updated = (oldValue: string, newValue: string) => void;
 
 export type OnSave = (value: string) => void;

@@ -16,6 +16,7 @@ export class Doc implements VNode {
   tag = 'pre';
   attrs: VNodeAttrs = [{ name: 'class', value: `${classPrefix}_doc` }];
   init: boolean;
+  reset: boolean = false;
   effect = new Effect<Line>();
   lineHeight = lineHeight;
   mouseDown = false;
@@ -901,6 +902,29 @@ export class Doc implements VNode {
     } else {
       updateAttrsItem(this, attrs);
     }
+  }
+
+  resetValue(value: string) {
+    this.ele?.remove();
+    this.reset = true;
+
+    this.children = this._createLines(splitTextByEnter(value));
+    this.ele = undefined;
+    this.nextSibling = undefined;
+    this.effect = new Effect<Line>();
+    this.mouseDown = false;
+    this.posMap = {};
+    this.posMoveOver = false;
+    this.pos = undefined;
+    this.sel = undefined;
+    this._rect = undefined;
+    this.compositionStartPos = undefined;
+    this.compositionText = '';
+    this.isComposing = false;
+    this.history = new DocHistory(this);
+    this.isDrag = false;
+    this.isUpdateEle = false;
+    this.effectAttrs = [];
   }
 }
 

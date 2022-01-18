@@ -55,6 +55,26 @@ export class Display {
     }
   }
 
+  static reset(editor: SimpleCodeEditor, container: HTMLElement) {
+    const { doc, input, gutters, cursor, wrapper, selected, dragCursor } = editor;
+    if (doc.reset) {
+      const docEle = createVNodeElement(doc);
+      wrapper.ele.append(input.ele, gutters.ele, selected.ele, docEle);
+      docEle.appendChild(cursor.ele);
+      docEle.appendChild(dragCursor.ele);
+      container.appendChild(wrapper.ele);
+      doc.reset = false;
+
+      Display._addDocElementEventListener(editor);
+
+      doc.updateDocRect();
+
+      editor.reset?.();
+    } else {
+      console.warn('doc initialized');
+    }
+  }
+
   private static _update(editor: SimpleCodeEditor) {
     const { doc, cursor, gutters, selected } = editor;
 
@@ -110,9 +130,16 @@ export class Display {
   }
 
   private static _addEventListener(editor: SimpleCodeEditor) {
-    const { doc, input, cursor, selected, dragCursor } = editor;
-
     // doc 监听事件
+    Display._addDocElementEventListener(editor);
+
+    // input 监听事件
+    Display._addInputElementEventListener(editor);
+  }
+
+  private static _addDocElementEventListener(editor: SimpleCodeEditor) {
+    const { doc, selected, input, cursor, dragCursor } = editor;
+
     doc.ele?.addEventListener('mousedown', (e) => {
       e_preventDefault(e);
       doc.posMoveOver = false;
@@ -226,8 +253,11 @@ export class Display {
       doc.isDrag = false;
       doc.mouseDown = false;
     });
+  }
 
-    // input 监听事件
+  private static _addInputElementEventListener(editor: SimpleCodeEditor) {
+    const { doc, input, cursor, selected } = editor;
+
     input.ele.addEventListener('blur', () => {
       cursor.hidden();
       selected.blur();
