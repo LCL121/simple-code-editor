@@ -8,12 +8,18 @@ import { Selected } from './display/selected';
 import { OnSave, Mounted, Updated, Reset } from './shared/type';
 import { classPrefix } from './shared/constants';
 
-interface SimpleCodeEditorOptions {
-  value: string;
-  mounted?: Mounted;
-  reset?: Reset;
+interface ChangeLifecycle {
   updated?: Updated;
   onSave?: OnSave;
+}
+
+interface SimpleCodeEditorLifecycle extends ChangeLifecycle {
+  reset?: Reset;
+  mounted?: Mounted;
+}
+
+interface SimpleCodeEditorOptions extends SimpleCodeEditorLifecycle {
+  value: string;
 }
 
 class SimpleCodeEditor {
@@ -25,10 +31,10 @@ class SimpleCodeEditor {
   readonly wrapper: Wrapper;
   readonly selected: Selected;
 
-  readonly onSave?: OnSave;
   readonly mounted?: Mounted;
-  readonly updated?: Updated;
   readonly reset?: Reset;
+  onSave?: OnSave;
+  updated?: Updated;
 
   private _scrollTop: number = 0;
   private _scrollLeft: number = 0;
@@ -72,6 +78,12 @@ class SimpleCodeEditor {
     this.gutters.updateGutters(this.doc.getLinesNum());
 
     Display.reset(this, this._container!);
+  }
+
+  resetLifecycle(options: ChangeLifecycle) {
+    const { onSave, updated } = options;
+    this.onSave = onSave;
+    this.updated = updated;
   }
 
   getCode() {
